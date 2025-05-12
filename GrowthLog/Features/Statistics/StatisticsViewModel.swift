@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+/// 주, 월 통계 뷰 모델
 final class StatisticsViewModel: ObservableObject {
     @Published var weeklyLogsCount: [Int] = [3, 5, 2, 4, 6, 1, 0]
     @Published var averageWordsPerLog: Double = 132.5
