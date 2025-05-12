@@ -72,9 +72,14 @@ class CategoryViewModel {
     func saveData() {
         guard let modelContext = modelContext else { return }
         
-        // 기존 데이터 모두 삭제 후 새로 저장 (간단한 구현을 위함)
+        // 기존 데이터 모두 삭제 시도 (실패해도 계속 진행)
         do {
-            try modelContext.delete(model: Category.self)
+            let descriptor = FetchDescriptor<Category>()
+            let existingCategories = try modelContext.fetch(descriptor)
+            
+            for category in existingCategories {
+                modelContext.delete(category)
+            }
             
             // 새 데이터 저장
             for category in categories {
@@ -88,7 +93,10 @@ class CategoryViewModel {
     }
     
     func loadData() {
-        guard let modelContext = modelContext else { return }
+        guard let modelContext = modelContext else { 
+            setupInitialData() // modelContext가 없으면 메모리에라도 초기 데이터 설정
+            return 
+        }
         
         do {
             let descriptor = FetchDescriptor<Category>()
@@ -103,10 +111,12 @@ class CategoryViewModel {
             } else {
                 // 데이터가 없으면 초기 데이터 설정
                 setupInitialData()
-                saveData()
+                try? saveData() // 저장 시도 (오류 무시)
             }
         } catch {
             print("Error fetching data: \(error)")
+            // 오류 발생 시 메모리에라도 초기 데이터 설정
+            setupInitialData()
         }
     }
     
