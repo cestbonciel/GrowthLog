@@ -10,7 +10,7 @@ import SwiftUI
 /// MARK: - App 에 뿌려질 메인 뷰
 struct LogMainView: View {
     @State private var selectedTab = 1
-
+    /// TODO: TabView가 iOS 18+ 이라 분기처리 필요할 수도 있음
     var body: some View {
         TabView(selection: $selectedTab) {
             CategoryFilterView()
