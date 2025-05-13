@@ -27,45 +27,29 @@ struct DateFormatRow: View {
     }
 }
 
-// SwiftUI 뷰 예시
 struct LogDummyView: View {
-    @State private var logsData: LogsData?
-    @State private var jsonFilePath: URL? = nil
+    @State private var logsData: [LogEntry] = []
     @State private var statistics: String = ""
     
     var body: some View {
         VStack {
-            Text("Growth Log 데이터 생성기")
+            Text("Growth Log 데이터 표시")
                 .font(.title)
                 .padding()
             
-            Button("300개의 로그 데이터 생성하기") {
-                generateData()
-            }
-            .padding()
-            .background(Color.blue)
-            .foregroundColor(.white)
-            .cornerRadius(10)
-            
-            if let data = logsData {
-                Text("생성된 데이터: \(data.logs.count)개")
+            if !logsData.isEmpty {
+                Text("데이터 항목 수: \(logsData.count)개")
                     .padding()
-                
-                if let path = jsonFilePath {
-                    Text("저장 위치: \(path.path)")
-                        .font(.caption)
-                        .padding(.horizontal)
-                }
                 
                 List {
                     Section(header: Text("샘플 데이터 (최신 5개)")) {
                         // 날짜를 기준으로 내림차순 정렬하여 최신 항목부터 표시
-                        ForEach(data.logs.sorted(by: {
+                        ForEach(logsData.sorted(by: {
                             $0.getDate()?.compare($1.getDate() ?? Date()) == .orderedDescending
                         }).prefix(5), id: \.id) { entry in
                             VStack(alignment: .leading, spacing: 8) {
                                 HStack {
-                                    // 날짜를 스크린샷과 유사한 형식으로 표시
+                                    // 날짜 표시
                                     VStack(spacing: 2) {
                                         Text(entry.getFormattedDate(format: "yyyy.MM.dd"))
                                             .font(.system(size: 16, weight: .bold))
@@ -101,112 +85,58 @@ struct LogDummyView: View {
                         }
                     }
                     
-                    // 날짜 형식 예시 섹션
-                    Section(header: Text("날짜 형식 예시")) {
-                        if let firstEntry = data.logs.first {
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text("원본 저장 형식:")
-                                    .font(.headline)
-                                Text(firstEntry.creationDate)
-                                    .font(.body)
-                                    .padding(4)
-                                    .background(Color.gray.opacity(0.1))
-                                    .cornerRadius(4)
-                                
-                                Divider()
-                                
-                                Text("제목:")
-                                    .font(.headline)
-                                Text("\(firstEntry.getTitle()) (원본: \(firstEntry.title ?? "nil"))")
-                                    .font(.body)
-                                    .padding(4)
-                                    .background(Color.gray.opacity(0.1))
-                                    .cornerRadius(4)
-                                
-                                Divider()
-                                
-                                Text("Date로 파싱 후 다양한 표시 형식:")
-                                    .font(.headline)
-                                
-                                Group {
-                                    DateFormatRow(label: "기본 형식", date: firstEntry.getFormattedDate())
-                                    DateFormatRow(label: "간단한 날짜", date: firstEntry.getFormattedDate(format: "yyyy.MM.dd"))
-                                    DateFormatRow(label: "시간만", date: firstEntry.getFormattedDate(format: "hh:mm:ss a"))
-                                    DateFormatRow(label: "한국식", date: firstEntry.getFormattedDate(format: "yyyy년 MM월 dd일 HH시 mm분"))
-                                    DateFormatRow(label: "ISO 형식", date: firstEntry.getFormattedDate(format: "yyyy-MM-dd'T'HH:mm:ssZ"))
-                                }
-                            }
-                        }
-                    }
-                    
                     if !statistics.isEmpty {
                         Section(header: Text("통계 정보")) {
                             Text(statistics)
                         }
                     }
                 }
+            } else {
+                Text("데이터가 없습니다.")
+                    .padding()
             }
             
             Spacer()
         }
         .padding()
+        .onAppear {
+            loadSampleData()
+        }
     }
     
-    func generateData() {
-        print("============ Growth Log 데이터 생성 시작 ============")
+    // 샘플 데이터를 로드하는 함수 (JSON 생성 대신)
+    func loadSampleData() {
+        // 여기서는 하드코딩된 샘플 데이터를 사용
+        // 실제 앱에서는 정적 JSON 파일 또는 API 등에서 로드
+        logsData = [
+            LogEntry(
+                id: 1,
+                creationDate: "2024-05-15 08:27 AM",
+                categoryId: 4,
+                categoryType: "기타",
+                childCategoryType: "소프트웨어 공학",
+                title: "오늘의 회고",
+                keep: "만족스러웠던 것은 협업에 관한 작업을 잘 수행했다.",
+                problem: "다음에는 아키텍처에 관한 부분이 비효율적이었다.",
+                try: "새롭게 적용할 것은 알고리즘에 관한 기술을 사용해볼 것이다."
+            ),
+            LogEntry(
+                id: 2,
+                creationDate: "2024-05-16 01:39 PM",
+                categoryId: 3,
+                categoryType: "자기계발",
+                childCategoryType: "코딩테스트",
+                title: nil,
+                keep: "성공적이었던 것은 문제해결에 관한 부분에서 성과를 냈다.",
+                problem: "개선이 필요한 점은 학습에 관한 부분이 어려웠다.",
+                try: "다음에 해볼 것은 경험에 관한 기술을 사용해볼 것이다."
+            )
+        ]
         
-        // 300개의 로그 항목 생성
-        let entries = LogDataGenerator.generateLogEntries(count: 300)
-        print("로그 항목 300개 생성 완료")
-        
-        // 샘플 로그 항목 디버그 출력
-        if let firstEntry = entries.first, let secondEntry = entries.dropFirst().first {
-            print("\n===== 로그 항목 샘플 출력 =====")
-            printLogEntry(firstEntry, number: 1)
-            printLogEntry(secondEntry, number: 2)
-        }
-        
-        // 날짜 포맷팅 예시 출력
-        LogDataGenerator.printFormattedDateExamples(entries: entries)
-        
-        // LogsData 객체 생성
-        logsData = LogsData(logs: entries)
-        print("LogsData 객체 생성 완료")
-        
-        // JSON 파일로 저장
-        if let path = LogDataGenerator.saveLogEntriesToJSON(entries: entries, filename: "log_data.json") {
-            jsonFilePath = path
-            print("JSON 파일 저장 경로: \(path.path)")
-        } else {
-            print("JSON 파일 저장 실패")
-        }
-        
-        // 통계 정보 가져오기
-        if let data = logsData {
-            statistics = LogDataGenerator.getStatistics(entries: data.logs)
-            print("\n===== 통계 정보 =====")
-            print(statistics)
-        }
-        
-        print("============ Growth Log 데이터 생성 완료 ============")
+        // 통계 정보 계산
+        statistics = LogDataGenerator.getStatistics(entries: logsData)
     }
-
-    // 로그 항목을 콘솔에 출력하는 함수 추가
-    func printLogEntry(_ entry: LogEntry, number: Int) {
-        print("\n----- 로그 항목 #\(number) -----")
-        print("ID: \(entry.id)")
-        print("날짜: \(entry.creationDate)")
-        print("카테고리: \(entry.categoryType) - \(entry.childCategoryType)")
-        print("제목: \(entry.getTitle()) (원본: \(entry.title ?? "nil"))")
-        print("Keep: \(entry.keep)")
-        print("Problem: \(entry.problem)")
-        print("Try: \(entry.try)")
-        print("--------------------------")
-    }
-
 }
-
-
 
 
 #Preview {

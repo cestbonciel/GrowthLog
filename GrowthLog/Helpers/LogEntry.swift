@@ -6,19 +6,18 @@
 //
 import Foundation
 
-// 전체 JSON 구조 정의
 struct LogsData: Codable {
     let logs: [LogEntry]
 }
 
-// 데이터 구조 정의
+// 전체 JSON 구조 정의
 struct LogEntry: Codable {
     let id: Int
     let creationDate: String
     let categoryId: Int
     let categoryType: String
     let childCategoryType: String
-    let title: String?  // 옵셔널 문자열 타입으로 제목 추가
+    let title: String?  // 옵셔널 String 유지
     let keep: String
     let problem: String
     let `try`: String
@@ -38,7 +37,7 @@ struct LogEntry: Codable {
     // 필요시 Date 객체로 변환하는 메서드
     func getDate() -> Date? {
         let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd hh:mm a" // 여기를 수정 - a 추가
+        formatter.dateFormat = "yyyy-MM-dd hh:mm a"
         formatter.locale = Locale(identifier: "en_US_POSIX")
         return formatter.date(from: creationDate)
     }
@@ -53,8 +52,8 @@ struct LogEntry: Codable {
         return displayFormatter.string(from: date)
     }
     
-    // 제목이 비어있으면 "KPT회고" 반환하는 메서드
+    // getTitle 메서드 - 옵셔널 처리 유지
     func getTitle() -> String {
-        return title ?? "KPT 회고"
+        return title ?? "KPT회고"
     }
 }
