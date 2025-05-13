@@ -8,7 +8,9 @@
 import Foundation
 import SwiftUI
 
+
 class LogDataGenerator {
+    
     // 카테고리 정의
     static let categories = [
         (id: 1, type: "기술", childCategories: ["컴퓨터과학", "네트워크", "보안", "인프라", "소프트웨어 공학"]),
@@ -18,10 +20,10 @@ class LogDataGenerator {
     ]
     
     // 카테고리별 키워드 정의
-    static let techKeywords = ["알고리즘", "데이터구조", "운영체제", "CI/CD", "클라우드", "서버", "API", "데이터베이스", "백엔드", "프론트엔드", "아키텍처", "마이크로서비스", "테스트", "TDD", "디버깅"]
-    static let programmingKeywords = ["코드", "함수", "클래스", "변수", "인터페이스", "프로토콜", "버그", "리팩토링", "상속", "라이브러리", "프레임워크", "성능", "최적화", "비동기", "UI", "코드리뷰"]
-    static let selfDevKeywords = ["학습", "성장", "목표", "계획", "시간관리", "포트폴리오", "커리어", "스킬", "경험", "지식", "문제해결", "팀워크", "소통", "협업", "피드백"]
-    static let etcKeywords = ["아이디어", "사용자경험", "디자인", "기획", "마케팅", "비즈니스", "브레인스토밍", "혁신", "생산성", "효율", "직관", "컨셉", "리서치", "분석", "인사이트"]
+    let techKeywords = ["알고리즘", "데이터구조", "운영체제", "CI/CD", "클라우드", "서버", "API", "데이터베이스", "백엔드", "프론트엔드", "아키텍처", "마이크로서비스", "테스트", "TDD", "디버깅"]
+    let programmingKeywords = ["코드", "함수", "클래스", "변수", "인터페이스", "프로토콜", "버그", "리팩토링", "상속", "라이브러리", "프레임워크", "성능", "최적화", "비동기", "UI", "코드리뷰"]
+    let selfDevKeywords = ["학습", "성장", "목표", "계획", "시간관리", "포트폴리오", "커리어", "스킬", "경험", "지식", "문제해결", "팀워크", "소통", "협업", "피드백"]
+    let etcKeywords = ["아이디어", "사용자경험", "디자인", "기획", "마케팅", "비즈니스", "브레인스토밍", "혁신", "생산성", "효율", "직관", "컨셉", "리서치", "분석", "인사이트"]
     
     static let categoryToKeywords = [
         "기술": techKeywords,
@@ -29,6 +31,26 @@ class LogDataGenerator {
         "자기계발": selfDevKeywords,
         "기타": etcKeywords
     ]
+    
+    
+    // 추가: 타이틀 생성용 샘플
+    static let titleSamples: [String] = [
+        "KPT회고",  // 기본값을 배열에 포함
+        "오늘의 회고",
+        "이번 주 개발 회고",
+        "프로젝트 중간 점검",
+        "스프린트 회고",
+        "개인 성장 리뷰",
+        "코딩 학습 회고",
+        "문제 해결 회고"
+    ]
+    
+    // 카테고리별 키워드 정의
+    static let techKeywords = ["알고리즘", "데이터구조", "운영체제", "CI/CD", "클라우드", "서버", "API", "데이터베이스", "백엔드", "프론트엔드", "아키텍처", "마이크로서비스", "테스트", "TDD", "디버깅"]
+    static let programmingKeywords = ["코드", "함수", "클래스", "변수", "인터페이스", "프로토콜", "버그", "리팩토링", "상속", "라이브러리", "프레임워크", "성능", "최적화", "비동기", "UI", "코드리뷰"]
+    static let selfDevKeywords = ["학습", "성장", "목표", "계획", "시간관리", "포트폴리오", "커리어", "스킬", "경험", "지식", "문제해결", "팀워크", "소통", "협업", "피드백"]
+    static let etcKeywords = ["아이디어", "사용자경험", "디자인", "기획", "마케팅", "비즈니스", "브레인스토밍", "혁신", "생산성", "효율", "직관", "컨셉", "리서치", "분석", "인사이트"]
+    
     
     // 랜덤 날짜 생성 함수 (최근 1년 이내)
     static func randomDate() -> Date {
@@ -42,7 +64,7 @@ class LogDataGenerator {
     // 날짜를 원하는 형식의 문자열로 변환
     static func formatDate(_ date: Date) -> String {
         let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd hh:mm:ss a"
+        formatter.dateFormat = "yyyy-MM-dd hh:mm a" // AM/PM 추가
         formatter.locale = Locale(identifier: "en_US_POSIX")
         return formatter.string(from: date)
     }
@@ -50,13 +72,12 @@ class LogDataGenerator {
     // 날짜를 ID 순서에 맞게 생성하는 함수 (최신 ID가 최신 날짜를 가지도록)
     static func generateDateForID(id: Int, totalCount: Int) -> Date {
         let now = Date()
-        let oneYearAgo = Calendar.current.date(byAdding: .year, value: -1, to: now)!
+        guard let oneYearAgo = Calendar.current.date(byAdding: .year, value: -1, to: now) else {
+            return Date(timeIntervalSinceNow: -365 * 24 * 60 * 60)
+        }
         
-        // ID가 높을수록 최근 날짜가 되도록 설정 (내림차순)
-        // 0.0 (가장 오래된 날짜) ~ 1.0 (가장 최근 날짜) 사이의 비율 계산
         let ratio = Double(id) / Double(totalCount)
         
-        // 1년 전부터 현재까지의 시간 범위 내에서 ID에 비례하는 날짜 생성
         let timeInterval = oneYearAgo.timeIntervalSinceNow + (ratio * -oneYearAgo.timeIntervalSinceNow)
         return Date(timeIntervalSinceNow: timeInterval)
     }
@@ -116,27 +137,50 @@ class LogDataGenerator {
     
     // 로그 항목 생성 함수
     static func generateLogEntry(id: Int, totalCount: Int) -> LogEntry {
-        let category = categories.randomElement()!
-        let childCategory = category.childCategories.randomElement()!
+        guard let categoryTuple = categories.randomElement(),
+              let childCategory = categoryTuple.childCategories.randomElement() else {
+            // 기본 값 설정 (실패 시 사용할 기본 값)
+            return LogEntry(
+                id: id,
+                creationDate: formatDate(Date()),
+                categoryId: 1,
+                categoryType: "기술",
+                childCategoryType: "소프트웨어 공학",
+                title: "KPT회고", // 기본 제목 명시적 설정
+                keep: "기본 내용",
+                problem: "기본 내용",
+                try: "기본 내용"
+            )
+        }
         
         // ID에 따라 날짜 생성
         let date = generateDateForID(id: id, totalCount: totalCount)
         let dateString = formatDate(date)
         
+        // 랜덤 제목 선택 - nil 대신 기본값 사용
+        // titleSamples에서 값을 가져오고, nil인 경우 "KPT회고" 기본값 사용
+        let title = titleSamples.randomElement() ?? "KPT회고"
+        
+        // 디버깅을 위해 제목 출력
+        if id % 25 == 0 { // 일부 항목만 로그 출력
+            print("로그 #\(id) 제목: \(title)")
+        }
+        
         let keepLength = Int.random(in: 1...2)
         let problemLength = Int.random(in: 1...2)
         let tryLength = Int.random(in: 1...2)
         
-        let keep = generateContent(category: category.type, childCategory: childCategory, section: "keep", length: keepLength)
-        let problem = generateContent(category: category.type, childCategory: childCategory, section: "problem", length: problemLength)
-        let tryContent = generateContent(category: category.type, childCategory: childCategory, section: "try", length: tryLength)
+        let keep = generateContent(category: categoryTuple.type, childCategory: childCategory, section: "keep", length: keepLength)
+        let problem = generateContent(category: categoryTuple.type, childCategory: childCategory, section: "problem", length: problemLength)
+        let tryContent = generateContent(category: categoryTuple.type, childCategory: childCategory, section: "try", length: tryLength)
         
         return LogEntry(
             id: id,
             creationDate: dateString,
-            categoryId: category.id,
-            categoryType: category.type,
+            categoryId: categoryTuple.id,
+            categoryType: categoryTuple.type,
             childCategoryType: childCategory,
+            title: title, // 여기서는 항상 문자열 값이 있음 (nil이 아님)
             keep: keep,
             problem: problem,
             try: tryContent
@@ -149,32 +193,19 @@ class LogDataGenerator {
         var entries: [LogEntry] = []
         
         for i in 1...count {
-            let category = categories.randomElement()!
-            let childCategory = category.childCategories.randomElement()!
+            let entry = generateLogEntry(id: i, totalCount: count)
+            entries.append(entry)
             
-            // ID에 따라 순차적인 날짜 생성 (ID가 큰 순서대로 최근 날짜)
-            let date = generateDateForID(id: i, totalCount: count)
-            let dateString = formatDate(date)
-            
-            let keepLength = Int.random(in: 1...2)
-            let problemLength = Int.random(in: 1...2)
-            let tryLength = Int.random(in: 1...2)
-            
-            let keep = generateContent(category: category.type, childCategory: childCategory, section: "keep", length: keepLength)
-            let problem = generateContent(category: category.type, childCategory: childCategory, section: "problem", length: problemLength)
-            let tryContent = generateContent(category: category.type, childCategory: childCategory, section: "try", length: tryLength)
-            
-            entries.append(LogEntry(
-                id: i,
-                creationDate: dateString,
-                categoryId: category.id,
-                categoryType: category.type,
-                childCategoryType: childCategory,
-                keep: keep,
-                problem: problem,
-                try: tryContent
-            ))
+            // 주기적으로 로그 출력하여 진행 상황 확인
+            if i % 50 == 0 {
+                print("로그 생성 진행: \(i)/\(count)")
+            }
         }
+        
+        // 제목 누락 여부 확인
+        let withTitle = entries.filter { $0.title != nil }.count
+        let withoutTitle = entries.filter { $0.title == nil }.count
+        print("제목 있음: \(withTitle), 제목 없음: \(withoutTitle)")
         
         return entries
     }
@@ -182,44 +213,24 @@ class LogDataGenerator {
     
     // JSON 파일로 저장
     static func saveLogEntriesToJSON(entries: [LogEntry], filename: String) -> URL? {
-        // 정렬된 순서로 JSON을 생성하는 함수
-        func createOrderedJSON(logData: LogData) -> String {
-            let logsJSON = logData.logs.map { entry -> String in
-                """
-                {
-                    "id": \(entry.id),
-                    "creationDate": "\(entry.creationDate)",
-                    "categoryId": \(entry.categoryId),
-                    "categoryType": "\(entry.categoryType)",
-                    "childCategoryType": "\(entry.childCategoryType)",
-                    "keep": "\(entry.keep.replacingOccurrences(of: "\"", with: "\\\""))",
-                    "problem": "\(entry.problem.replacingOccurrences(of: "\"", with: "\\\""))",
-                    "try": "\(entry.try.replacingOccurrences(of: "\"", with: "\\\""))"
-                }
-                """
-            }.joined(separator: ",\n")
-            
-            return """
-            {
-                "title": "\(logData.title)",
-                "logs": [
-                    \(logsJSON)
-                ]
-            }
-            """
-        }
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys] // 키 정렬 추가
         
-        // LogData 객체 생성
-        let logData = LogData(title: "Growth Logs", logs: entries)
-        
-        // 정렬된 JSON 문자열 생성
-        let jsonString = createOrderedJSON(logData: logData)
+        // 로그 데이터를 LogsData 구조체로 감싸기
+        let logsData = LogsData(logs: entries)
         
         do {
-            let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+            let jsonData = try encoder.encode(logsData)
+            
+            // 앱의 Documents 디렉토리에 저장
+            guard let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
+                print("문서 디렉토리를 찾을 수 없습니다.")
+                return nil
+            }
+            
             let fileURL = documentsDirectory.appendingPathComponent(filename)
             
-            try jsonString.write(to: fileURL, atomically: true, encoding: .utf8)
+            try jsonData.write(to: fileURL)
             print("JSON 파일 저장 완료: \(fileURL.path)")
             return fileURL
         } catch {
@@ -232,10 +243,11 @@ class LogDataGenerator {
     static func printFormattedDateExamples(entries: [LogEntry]) {
         guard let entry = entries.first else { return }
         
-        print("원본 ISO8601 날짜: \(entry.creationDate)")
+        print("원본 날짜 형식: \(entry.creationDate)")
         print("기본 형식(yyyy.MM.dd hh:mm a): \(entry.getFormattedDate())")
         print("간단한 날짜(yyyy.MM.dd): \(entry.getFormattedDate(format: "yyyy.MM.dd"))")
         print("한국식 날짜시간: \(entry.getFormattedDate(format: "yyyy년 MM월 dd일 HH시 mm분"))")
+        print("제목: \(entry.getTitle()) (원본: \(entry.title ?? "nil"))")
         
         // 월별 그룹화 예시
         let entriesByMonth = Dictionary(grouping: entries) { entry -> String in
@@ -252,6 +264,14 @@ class LogDataGenerator {
     // 통계 정보
     static func getStatistics(entries: [LogEntry]) -> String {
         var statsText = ""
+        
+        // 타이틀 존재 여부 통계
+        let entriesWithTitle = entries.filter { $0.title != nil }
+        let titlePercentage = Double(entriesWithTitle.count) / Double(entries.count) * 100
+        
+        statsText += "제목 통계:\n"
+        statsText += "- 제목 있음: \(entriesWithTitle.count)개 (\(String(format: "%.1f", titlePercentage))%)\n"
+        statsText += "- 제목 없음(기본값 'KPT회고' 사용): \(entries.count - entriesWithTitle.count)개 (\(String(format: "%.1f", 100 - titlePercentage))%)\n\n"
         
         // 카테고리별 분포
         var categoryDistribution: [String: Int] = [:]
@@ -278,15 +298,14 @@ class LogDataGenerator {
             statsText += "- \(childCategory): \(count)개 (\(String(format: "%.1f", percentage))%)\n"
         }
         
-        // 월별 분포
+        // 월별 분포 (새 날짜 형식 사용)
         var monthlyDistribution: [String: Int] = [:]
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM"
         
-        let iso8601DateFormatter = ISO8601DateFormatter()
         for entry in entries {
-            if let date = iso8601DateFormatter.date(from: entry.creationDate) {
-                let monthKey = dateFormatter.string(from: date)
+            if let date = entry.getDate() {
+                let formatter = DateFormatter()
+                formatter.dateFormat = "yyyy-MM"
+                let monthKey = formatter.string(from: date)
                 monthlyDistribution[monthKey, default: 0] += 1
             }
         }
