@@ -25,7 +25,6 @@ struct SearchFilterView: View {
                                 .foregroundColor(.gray)
                                 .font(.title3)
 
-
                             Image(systemName: "text.page.badge.magnifyingglass")
                                 .resizable()
                                 .scaledToFit()
