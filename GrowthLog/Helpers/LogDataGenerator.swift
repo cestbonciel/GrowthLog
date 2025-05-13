@@ -39,6 +39,15 @@ class LogDataGenerator {
         return Date(timeIntervalSinceNow: randomTimeInterval)
     }
     
+    // 날짜를 원하는 형식의 문자열로 변환
+    static func formatDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd hh:mm:ss a"
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        return formatter.string(from: date)
+    }
+    
+    
     // 컨텐츠 생성 함수
     static func generateContent(category: String, childCategory: String, section: String, length: Int = 2) -> String {
         guard let keywords = categoryToKeywords[category] else { return "" }
@@ -97,9 +106,7 @@ class LogDataGenerator {
         let childCategory = category.childCategories.randomElement()!
         
         let date = randomDate()
-        let iso8601DateFormatter = ISO8601DateFormatter()
-        iso8601DateFormatter.formatOptions = [.withInternetDateTime]
-        let dateString = iso8601DateFormatter.string(from: date)
+        let dateString = formatDate(date)
         
         let keepLength = Int.random(in: 1...2)
         let problemLength = Int.random(in: 1...2)
@@ -120,6 +127,7 @@ class LogDataGenerator {
             try: tryContent
         )
     }
+
     
     // 여러 개의 로그 항목 생성
     static func generateLogEntries(count: Int) -> [LogEntry] {
@@ -137,8 +145,11 @@ class LogDataGenerator {
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted]
         
+        // 로그 데이터를 LogData 구조체로 감싸기
+        let logData = LogData(title: "Growth Logs", logs: entries)
+        
         do {
-            let jsonData = try encoder.encode(entries)
+            let jsonData = try encoder.encode(logData)
             
             // 앱의 Documents 디렉토리에 저장
             let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
@@ -152,6 +163,27 @@ class LogDataGenerator {
             return nil
         }
     }
+    
+    // 날짜 관련 샘플 메서드 추가
+    static func printFormattedDateExamples(entries: [LogEntry]) {
+        guard let entry = entries.first else { return }
+        
+        print("원본 ISO8601 날짜: \(entry.creationDate)")
+        print("기본 형식(yyyy.MM.dd hh:mm a): \(entry.getFormattedDate())")
+        print("간단한 날짜(yyyy.MM.dd): \(entry.getFormattedDate(format: "yyyy.MM.dd"))")
+        print("한국식 날짜시간: \(entry.getFormattedDate(format: "yyyy년 MM월 dd일 HH시 mm분"))")
+        
+        // 월별 그룹화 예시
+        let entriesByMonth = Dictionary(grouping: entries) { entry -> String in
+            return entry.getFormattedDate(format: "yyyy.MM")
+        }
+        
+        print("\n월별 로그 수:")
+        for (month, monthEntries) in entriesByMonth.sorted(by: { $0.key < $1.key }) {
+            print("\(month): \(monthEntries.count)개")
+        }
+    }
+    
     
     // 통계 정보
     static func getStatistics(entries: [LogEntry]) -> String {
