@@ -2,159 +2,152 @@
 //  CategoryFilterView.swift
 //  GrowthLog
 //
-//  Created by Nat Kim on 5/12/25.
+//  Created by 백현진 on 5/12/25.
 //
 
 import SwiftUI
 import SwiftData
 
-/// 임시 뷰입니다 - 카테고리와 태그 기반 검색 기능 필터링 구현 뷰입니다.
 struct CategoryFilterView: View {
-    @Environment(\.modelContext) private var modelContext
-    @State var viewModel = CategoryViewModel()
-    @State var isLoading = true
-    @State private var errorMessage: String? = nil
+    @Environment(\.dismiss) private var dismiss
+
+    @State private var viewModel = CategoryFilterViewModel()
+    @State private var showLimitAlert = false
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 20) {
-                if let error = errorMessage {
-                    Text("데이터 로드 오류: \(error)")
-                        .foregroundColor(.red)
-                        .padding()
-                } else if isLoading {
-                    ProgressView("카테고리를 로드 중입니다...")
-                        .padding()
-                        .tint(.primary)
-                } else if viewModel.categories.isEmpty {
-                    Text("카테고리가 없습니다.")
-                        .padding()
-                } else {
-                    // 카테고리 선택 (세그먼트 컨트롤)
-                    Picker("카테고리", selection: $viewModel.selectedCategoryIndex) {
-                        ForEach(0..<viewModel.categories.count, id: \.self) { index in
-                            Text(viewModel.categories[index].title).tag(index)
-                        }
+            VStack(spacing: 10) {
+                if !viewModel.selectedTags.isEmpty {
+                    SelectedTagsHeaderView(
+                        tags: viewModel.selectedTags,
+                        onClear: viewModel.clearSelections
+                    )
+                }
+
+                VStack(alignment: .leading, spacing: 24) {
+                    ForEach(viewModel.categories) { category in
+                        CategorySectionView(
+                            showLimitAlert: $showLimitAlert, category: category,
+                            viewModel: viewModel
+                        )
                     }
-                    .pickerStyle(SegmentedPickerStyle())
-                    .padding(.horizontal)
-                    
-                    // 현재 선택된 카테고리 제목
-                    Text(viewModel.currentCategory.title)
-                        .font(.headline)
-                        .padding(.top)
-                    
-                    // 태그 버튼 그리드
-                    ScrollView {
-                        if let currentCategory = viewModel.safeCurrentCategory {
-                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 120))], spacing: 10) {
-                                ForEach(Array(currentCategory.tags.enumerated()), id: \.offset) { index, tag in
-                                    Button(action: {
-                                        viewModel.toggleTagSelection(tagIndex: index)
-                                    }) {
-                                        Text(tag.name)
-                                            .padding(.vertical, 8)
-                                            .padding(.horizontal, 16)
-                                            .frame(maxWidth: .infinity)
-                                            .background(tag.isSelected ? Color.blue : Color.gray.opacity(0.2))
-                                            .foregroundColor(tag.isSelected ? .white : .primary)
-                                            .cornerRadius(8)
-                                    }
-                                }
-                            }
-                            .padding()
-                        } else {
-                            Text("카테고리를 로드하는 중...")
-                                .padding()
-                        }
+
+                    Button("적용하기") {
+                        print("선택된 태그:", viewModel.selectedTags.map { $0.name })
+
+                        dismiss()
                     }
+                    .frame(maxWidth: .infinity)
+                    .font(.title3)
+                    .bold()
+                    .padding()
+                    .background(Color.green)
+                    .foregroundColor(.white)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .padding()
                 }
-                
-                Spacer()
+                .padding(.vertical, 20)
             }
-            .navigationTitle("카테고리 및 태그")
-            .onAppear {
-                loadDataSafely()
-            }
-        }
-    }
-    
-    private func loadDataSafely() {
-        isLoading = true
-        errorMessage = nil
-        
-        // Task를 사용하여 비동기적으로 처리
-        Task {
-            do {
-                viewModel.modelContext = modelContext
-                try await Task.sleep(nanoseconds: 500_000_000) // 0.5초 대기
-                
-                // UI 업데이트는 메인 쓰레드에서
-                await MainActor.run {
-                    // 데이터 로드 및 초기 설정
-                    viewModel.loadData()
-                    isLoading = false
-                }
-            } catch {
-                await MainActor.run {
-                    errorMessage = error.localizedDescription
-                    isLoading = false
-                }
+            .padding(.vertical, 20)
+            .navigationTitle("카테고리 필터")
+            .navigationBarTitleDisplayMode(.inline)
+            .alert("태그는 최대 3개까지만 선택할 수 있습니다.", isPresented: $showLimitAlert) {
+                Button("확인", role: .cancel) { }
             }
         }
     }
 }
 
-#Preview {
-    // 미리보기를 위한 인메모리 컨테이너 생성
-    let config = ModelConfiguration(isStoredInMemoryOnly: true)
-    let container = try! ModelContainer(for: Category.self, ChildCategory.self, configurations: config)
-    
-    // 테스트 데이터 생성 및 삽입
-    let viewModel = CategoryViewModel()
-    viewModel.setupInitialData()
-    
-    for category in viewModel.categories {
-        container.mainContext.insert(category)
-    }
-    
-    return CategoryFilterView()
-        .modelContainer(container)
-}
 
-// 편의를 위한 미리보기 - 데이터 로드 없이 바로 결과 확인용
-#Preview {
-    // 미리보기를 위한 인메모리 컨테이너 생성
-    let config = ModelConfiguration(isStoredInMemoryOnly: true)
-    let container = try! ModelContainer(for: Category.self, ChildCategory.self, configurations: config)
-    
-    // 테스트 데이터 생성 및 삽입
-    let viewModel = CategoryViewModel()
-    viewModel.setupInitialData()
-    
-    for category in viewModel.categories {
-        container.mainContext.insert(category)
-    }
-    
-    return CategoryFilterView()
-        .modelContainer(container)
-}
+//카테고리 및 상단 태그 매칭
+private struct SelectedTagsHeaderView: View {
+    let tags: [ChildCategory]
+    let onClear: () -> Void
 
-// 편의를 위한 미리보기 - 데이터 로드 없이 바로 결과 확인용
-struct PreloadedCategoryFilterView: View {
-    @State private var viewModel: CategoryViewModel
-    
-    init() {
-        let vm = CategoryViewModel()
-        vm.setupInitialData()
-        self._viewModel = State(initialValue: vm)
-    }
-    
     var body: some View {
-        CategoryFilterView(viewModel: viewModel, isLoading: false)
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack {
+                ForEach(tags, id: \.self) { tag in
+                    Text(tag.name)
+                        .padding(.vertical, 6)
+                        .padding(.horizontal, 12)
+                        //.bold()
+                        .background(Color.green)
+                        .foregroundColor(tag.isSelected ? .black : .primary)
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                }
+            }
+            .padding(.horizontal)
+        }
+        .overlay(alignment: .trailing) {
+            Button(action: onClear) {
+                Image(systemName: "x.circle")
+                    .foregroundStyle(.gray)
+                    .padding()
+            }
+        }
+        .overlay {
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(.gray.opacity(0.6), lineWidth: 1)
+                .frame(maxWidth: .infinity)
+                .frame(height: 60)
+        }
+        .padding(.top, 60)
+        .padding(.horizontal, 10)
     }
 }
 
-#Preview("데이터 로드됨") {
-    PreloadedCategoryFilterView()
+//태그 ScrollView
+private struct CategorySectionView: View {
+    @Binding var showLimitAlert: Bool
+
+    let category: Category
+    var viewModel: CategoryFilterViewModel
+
+    var body: some View {
+        VStack(alignment: .leading) {
+            Text(category.title)
+                .font(.headline)
+                .padding(.horizontal)
+                .padding(.bottom, 10)
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 16) {
+                    ForEach(category.tags) { tag in
+                        Button {
+                            if tag.isSelected || viewModel.selectedTags.count < 3 {
+                                viewModel.toggleSelection(for: tag)
+                            } else {
+                                showLimitAlert = true
+                            }
+                        } label: {
+                            Text(tag.name)
+                                .padding(.vertical, 8)
+                                .padding(.horizontal, 16)
+                                .frame(height: 40)
+                                .font(.footnote)
+                                .background(tag.isSelected ? Color.green : Color.gray.opacity(0.2))
+                                .foregroundColor(tag.isSelected ? .black : .primary)
+                                .clipShape(RoundedRectangle(cornerRadius: 12))
+                        }
+                    }
+                }
+                .padding(.horizontal)
+            }
+            .padding(.bottom, 10)
+
+            Rectangle()
+                .fill(.gray.opacity(0.4))
+                .frame(height: 1)
+                .padding(.horizontal, 20)
+        }
+    }
+}
+
+
+
+
+
+#Preview {
+    CategoryFilterView()
 }

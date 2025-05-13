@@ -13,7 +13,7 @@ struct LogMainView: View {
     /// TODO: TabView가 iOS 18+ 이라 분기처리 필요할 수도 있음
     var body: some View {
         TabView(selection: $selectedTab) {
-            CategoryFilterView()
+            SearchFilterView()
                 .tabItem { Image(systemName: "magnifyingglass") }
                 .tag(0)
             LogListView()

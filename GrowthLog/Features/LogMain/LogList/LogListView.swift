@@ -8,77 +8,99 @@
 import SwiftUI
 
 // MARK: Dummy Data - 원래 Data > Model
-struct LogItem: Identifiable {
+struct LogItem: Identifiable, Hashable {
     let id = UUID()
-    let title: String
+    var title: String?
+    var category: Category
+    var keep: String
+    var problem: String
+    var tryContents: String
     let date: Date
     
+    var URL: URL?
+    
+    // 날짜 포맷
     var formattedDate: String {
         let df = DateFormatter()
-        df.dateStyle = .medium
+        df.dateFormat = "yyyy.MM.dd"
+        return df.string(from: date)
+    }
+    
+    // 시간 포맷
+    var formattedtime: String {
+        let df = DateFormatter()
+        df.dateFormat = "hh:mm a"
         return df.string(from: date)
     }
 }
 
 struct LogListView: View {
-    private let items: [LogItem] = [
-        .init(title: "SwiftUI 학습",       date: Date().addingTimeInterval(-1*24*3600)),
-        .init(title: "CoreData CRUD 구현", date: Date().addingTimeInterval(-2*24*3600)),
-        .init(title: "MVVM 구조 적용",     date: Date().addingTimeInterval(-3*24*3600)),
-        .init(title: "UI 리팩토링",        date: Date().addingTimeInterval(-4*24*3600))
+    @State private var isShowSampleCell = false
+    
+    static let categorys: [Category] = [
+        Category(type: .tech, tags: [ChildCategory(type: .computerScience), ChildCategory(type: .network), ChildCategory(type: .security)]),
+        Category(type: .programming, tags: [ChildCategory(type: .swift), ChildCategory(type: .cpp), ChildCategory(type: .python)]),
+        Category(type: .programming, tags: [ChildCategory(type: .swift), ChildCategory(type: .java), ChildCategory(type: .react)]),
+        Category(type: .selfDevelopment, tags: [ChildCategory(type: .codingTest), ChildCategory(type: .interview), ChildCategory(type: .sideProject)]),
+        Category(type: .etc, tags: [ChildCategory(type: .computerScience), ChildCategory(type: .product), ChildCategory(type: .uiux)])
     ]
-
-    private let columns = [
-        GridItem(.flexible()),
-        GridItem(.flexible())
+    
+    private let items: [LogItem] = [
+        .init(title: "SwiftUI 학습",       category: LogListView.categorys[0], keep: "학습 개념 이해", problem: "응용", tryContents: "많이 사용해 보기", date: Date().addingTimeInterval(-1*24*3600)),
+        .init(title: nil,                 category: LogListView.categorys[2], keep: "학습 개념 이해", problem: "응용", tryContents: "많이 사용해 보기", date: Date().addingTimeInterval(-1*24*3600)),
+        .init(title: "CoreData CRUD 구현", category: LogListView.categorys[1], keep: "학습 개념 이해", problem: "응용", tryContents: "많이 사용해 보기", date: Date().addingTimeInterval(-2*24*3600)),
+        .init(title: "MVVM 구조 적용",      category: LogListView.categorys[3], keep: "학습 개념 이해", problem: "응용", tryContents: "많이 사용해 보기", date: Date().addingTimeInterval(-3*24*3600)),
+        .init(title: "UI 리팩토링",         category: LogListView.categorys[4], keep: "학습 개념 이해", problem: "응용", tryContents: "많이 사용해 보기", date: Date().addingTimeInterval(-4*24*3600))
     ]
     
     var body: some View {
-        List {
-
-            Section(header: Text("Grid View").font(.headline)) {
-                LazyVGrid(columns: columns, spacing: 16) {
-                    ForEach(items) { item in
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(item.title)
-                                .font(.subheadline).bold()
-                            Text(item.formattedDate)
-                                .font(.caption)
-                                .foregroundColor(.secondary)
+        NavigationStack {
+            VStack {
+                if items.isEmpty {
+                    Text("아직 작성한 회고가 없습니다.")
+                } else {
+                    List {
+                        ForEach(items) { item in
+                            ZStack(alignment: .leading) {
+                                LogListCell(item: item)
+                                    .padding(.vertical, 5)
+                                NavigationLink {
+                                    LogDetailView(logMainData: item)
+                                } label: {
+                                    EmptyView()
+                                }
+                                .opacity(0.0)
+                            }
+                            .listRowSeparator(.hidden)
+                            .listRowBackground(Color.clear)
                         }
-                        .frame(maxWidth: .infinity, minHeight: 80)
-                        .padding()
-                        .background(Color(.secondarySystemBackground))
-                        .cornerRadius(8)
                     }
+                    .listStyle(.plain)
+                    .padding(EdgeInsets(top: 10, leading: 10, bottom: 20, trailing: 10))
+                    
                 }
-                .padding(.vertical, 8)
+                
             }
-            
-
-            Section(header: Text("List View").font(.headline)) {
-                ForEach(items) { item in
-                    HStack {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(item.title)
-                                .font(.body)
-                            Text(item.formattedDate)
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                        Spacer()
+            .navigationTitle("회고")
+            .toolbar {
+                ToolbarItem {
+                    Button {
+                        isShowSampleCell = true
+                    } label: {
+                        Image(systemName: "gearshape.fill")
                     }
-                    .padding(.vertical, 8)
                 }
+            }
+            .navigationDestination(isPresented: $isShowSampleCell) {
+                SampleCell()
             }
         }
-        .listStyle(InsetGroupedListStyle())
-        .padding(EdgeInsets(top: 30, leading: 20, bottom: 20, trailing: 20))
+        
     }
 }
+
 
 #Preview {
     LogListView()
 }
-
 
