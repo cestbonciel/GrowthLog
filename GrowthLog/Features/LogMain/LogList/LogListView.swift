@@ -38,11 +38,11 @@ struct LogListView: View {
     @State private var isShowSampleCell = false
     
     static let categorys: [Category] = [
-        .init(title: "기술", tags: [.init(name: "CS", isSelected: true), .init(name: "네트워크", isSelected: true), .init(name: "보안", isSelected: false)]),
-        .init(title: "프로그래밍", tags: [.init(name: "Swift", isSelected: true), .init(name: "C++", isSelected: true), .init(name: "JAVA", isSelected: false)]),
-        .init(title: "프로그래밍", tags: [.init(name: "Swift", isSelected: true), .init(name: "C++", isSelected: false), .init(name: "JAVA", isSelected: true)]),
-        .init(title: "자기계발", tags: [.init(name: "코딩테스트", isSelected: false), .init(name: "면접", isSelected: true), .init(name: "사이드프로젝트", isSelected: false)]),
-        .init(title: "기타", tags: [.init(name: "product", isSelected: true), .init(name: "UI/UX", isSelected: false)])
+        Category(type: .tech, tags: [ChildCategory(type: .computerScience), ChildCategory(type: .network), ChildCategory(type: .security)]),
+        Category(type: .programming, tags: [ChildCategory(type: .swift), ChildCategory(type: .cpp), ChildCategory(type: .python)]),
+        Category(type: .programming, tags: [ChildCategory(type: .swift), ChildCategory(type: .java), ChildCategory(type: .react)]),
+        Category(type: .selfDevelopment, tags: [ChildCategory(type: .codingTest), ChildCategory(type: .interview), ChildCategory(type: .sideProject)]),
+        Category(type: .etc, tags: [ChildCategory(type: .computerScience), ChildCategory(type: .product), ChildCategory(type: .uiux)])
     ]
     
     private let items: [LogItem] = [

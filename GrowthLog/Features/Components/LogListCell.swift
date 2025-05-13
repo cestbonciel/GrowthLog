@@ -68,7 +68,7 @@ struct LogListCell: View {
 }
 
 #Preview {
-    let categorys: Category = .init(title: "기술", tags: [.init(name: "CS", isSelected: true), .init(name: "네트워크", isSelected: true), .init(name: "보안", isSelected: false)])
+    let categorys: Category = Category(type: .tech, tags: [ChildCategory(type: .computerScience), ChildCategory(type: .network), ChildCategory(type: .security)])
     
     LogListCell(item: LogItem(title: "SwiftUI 학습", category: categorys, keep: "학습 개념 이해", problem: "응용", tryContents: "많이 사용해 보기", date: Date().addingTimeInterval(-1*24*3600)))
     LogListCell(item: LogItem(title: nil,           category: categorys, keep: "학습 개념 이해", problem: "응용", tryContents: "많이 사용해 보기", date: Date().addingTimeInterval(-1*24*3600)))
