@@ -15,13 +15,24 @@ struct LogData: Codable {
 // 데이터 구조 정의
 struct LogEntry: Codable {
     let id: Int
-    let creationDate: String  // ISO8601 형식의 날짜
+    let creationDate: String
     let categoryId: Int
     let categoryType: String
     let childCategoryType: String
     let keep: String
     let problem: String
-    let `try`: String  // Swift에서 예약어를 속성명으로 사용할 때는 백틱으로 감싸야 함
+    let `try`: String
+    
+    enum CodingKeys: String, CodingKey {
+            case id
+            case creationDate
+            case categoryId
+            case categoryType
+            case childCategoryType
+            case keep
+            case problem
+            case `try`
+        }
     
     // 필요시 Date 객체로 변환하는 메서드
     func getDate() -> Date? {

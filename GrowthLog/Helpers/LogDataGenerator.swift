@@ -47,6 +47,20 @@ class LogDataGenerator {
         return formatter.string(from: date)
     }
     
+    // 날짜를 ID 순서에 맞게 생성하는 함수 (최신 ID가 최신 날짜를 가지도록)
+    static func generateDateForID(id: Int, totalCount: Int) -> Date {
+        let now = Date()
+        let oneYearAgo = Calendar.current.date(byAdding: .year, value: -1, to: now)!
+        
+        // ID가 높을수록 최근 날짜가 되도록 설정 (내림차순)
+        // 0.0 (가장 오래된 날짜) ~ 1.0 (가장 최근 날짜) 사이의 비율 계산
+        let ratio = Double(id) / Double(totalCount)
+        
+        // 1년 전부터 현재까지의 시간 범위 내에서 ID에 비례하는 날짜 생성
+        let timeInterval = oneYearAgo.timeIntervalSinceNow + (ratio * -oneYearAgo.timeIntervalSinceNow)
+        return Date(timeIntervalSinceNow: timeInterval)
+    }
+    
     
     // 컨텐츠 생성 함수
     static func generateContent(category: String, childCategory: String, section: String, length: Int = 2) -> String {
@@ -101,11 +115,12 @@ class LogDataGenerator {
     }
     
     // 로그 항목 생성 함수
-    static func generateLogEntry(id: Int) -> LogEntry {
+    static func generateLogEntry(id: Int, totalCount: Int) -> LogEntry {
         let category = categories.randomElement()!
         let childCategory = category.childCategories.randomElement()!
         
-        let date = randomDate()
+        // ID에 따라 날짜 생성
+        let date = generateDateForID(id: id, totalCount: totalCount)
         let dateString = formatDate(date)
         
         let keepLength = Int.random(in: 1...2)
@@ -127,35 +142,84 @@ class LogDataGenerator {
             try: tryContent
         )
     }
-
+    
     
     // 여러 개의 로그 항목 생성
     static func generateLogEntries(count: Int) -> [LogEntry] {
         var entries: [LogEntry] = []
         
         for i in 1...count {
-            entries.append(generateLogEntry(id: i))
+            let category = categories.randomElement()!
+            let childCategory = category.childCategories.randomElement()!
+            
+            // ID에 따라 순차적인 날짜 생성 (ID가 큰 순서대로 최근 날짜)
+            let date = generateDateForID(id: i, totalCount: count)
+            let dateString = formatDate(date)
+            
+            let keepLength = Int.random(in: 1...2)
+            let problemLength = Int.random(in: 1...2)
+            let tryLength = Int.random(in: 1...2)
+            
+            let keep = generateContent(category: category.type, childCategory: childCategory, section: "keep", length: keepLength)
+            let problem = generateContent(category: category.type, childCategory: childCategory, section: "problem", length: problemLength)
+            let tryContent = generateContent(category: category.type, childCategory: childCategory, section: "try", length: tryLength)
+            
+            entries.append(LogEntry(
+                id: i,
+                creationDate: dateString,
+                categoryId: category.id,
+                categoryType: category.type,
+                childCategoryType: childCategory,
+                keep: keep,
+                problem: problem,
+                try: tryContent
+            ))
         }
         
         return entries
     }
     
+    
     // JSON 파일로 저장
     static func saveLogEntriesToJSON(entries: [LogEntry], filename: String) -> URL? {
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = [.prettyPrinted]
+        // 정렬된 순서로 JSON을 생성하는 함수
+        func createOrderedJSON(logData: LogData) -> String {
+            let logsJSON = logData.logs.map { entry -> String in
+                """
+                {
+                    "id": \(entry.id),
+                    "creationDate": "\(entry.creationDate)",
+                    "categoryId": \(entry.categoryId),
+                    "categoryType": "\(entry.categoryType)",
+                    "childCategoryType": "\(entry.childCategoryType)",
+                    "keep": "\(entry.keep.replacingOccurrences(of: "\"", with: "\\\""))",
+                    "problem": "\(entry.problem.replacingOccurrences(of: "\"", with: "\\\""))",
+                    "try": "\(entry.try.replacingOccurrences(of: "\"", with: "\\\""))"
+                }
+                """
+            }.joined(separator: ",\n")
+            
+            return """
+            {
+                "title": "\(logData.title)",
+                "logs": [
+                    \(logsJSON)
+                ]
+            }
+            """
+        }
         
-        // 로그 데이터를 LogData 구조체로 감싸기
+        // LogData 객체 생성
         let logData = LogData(title: "Growth Logs", logs: entries)
         
+        // 정렬된 JSON 문자열 생성
+        let jsonString = createOrderedJSON(logData: logData)
+        
         do {
-            let jsonData = try encoder.encode(logData)
-            
-            // 앱의 Documents 디렉토리에 저장
             let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
             let fileURL = documentsDirectory.appendingPathComponent(filename)
             
-            try jsonData.write(to: fileURL)
+            try jsonString.write(to: fileURL, atomically: true, encoding: .utf8)
             print("JSON 파일 저장 완료: \(fileURL.path)")
             return fileURL
         } catch {
