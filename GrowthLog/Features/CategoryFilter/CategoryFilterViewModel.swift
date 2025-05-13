@@ -32,33 +32,33 @@ class CategoryViewModel {
     func setupInitialData() {
         // 기본 카테고리와 태그 데이터 설정
         let techTags = [
-            Tag(name: "컴퓨터과학"),
-            Tag(name: "네트워크"),
-            Tag(name: "보안"),
-            Tag(name: "인프라"),
-            Tag(name: "소프트웨어 공학")
+            ChildCategory(type: .computerScience),
+            ChildCategory(type: .network),
+            ChildCategory(type: .security),
+            ChildCategory(type: .infrastructure),
+            ChildCategory(type: .softwareEngineering)
         ]
         
         let programmingTags = [
-            Tag(name: "Swift"),
-            Tag(name: "C++"),
-            Tag(name: "Python"),
-            Tag(name: "Java"),
-            Tag(name: "JavaScript"),
-            Tag(name: "React")
+            ChildCategory(type: .swift),
+            ChildCategory(type: .cpp),
+            ChildCategory(type: .python),
+            ChildCategory(type: .java),
+            ChildCategory(type: .javascript),
+            ChildCategory(type: .react)
         ]
         
         let selfDevTags = [
-            Tag(name: "코딩테스트"),
-            Tag(name: "면접"),
-            Tag(name: "사이드프로젝트")
+            ChildCategory(type: .codingTest),
+            ChildCategory(type: .interview),
+            ChildCategory(type: .sideProject)
         ]
         
         let etcTags = [
-            Tag(name: "IDEA"),
-            Tag(name: "디자인"),
-            Tag(name: "Product"),
-            Tag(name: "UIUX")
+            ChildCategory(type: .idea),
+            ChildCategory(type: .design),
+            ChildCategory(type: .product),
+            ChildCategory(type: .uiux)
         ]
         
         categories = [
@@ -93,9 +93,9 @@ class CategoryViewModel {
     }
     
     func loadData() {
-        guard let modelContext = modelContext else { 
+        guard let modelContext = modelContext else {
             setupInitialData() // modelContext가 없으면 메모리에라도 초기 데이터 설정
-            return 
+            return
         }
         
         do {
@@ -111,7 +111,7 @@ class CategoryViewModel {
             } else {
                 // 데이터가 없으면 초기 데이터 설정
                 setupInitialData()
-                try? saveData() // 저장 시도 (오류 무시)
+                saveData() // 저장 시도
             }
         } catch {
             print("Error fetching data: \(error)")
