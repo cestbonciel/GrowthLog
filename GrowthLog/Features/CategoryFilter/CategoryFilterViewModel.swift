@@ -2,144 +2,61 @@
 //  CategoryFilterViewModel.swift
 //  GrowthLog
 //
-//  Created by Nat Kim on 5/12/25.
+//  Created by 백현진 on 5/12/25.
 //
 
+import Foundation
 import SwiftUI
 import SwiftData
 
-/// ViewModel 생성은 선택사항입니다 Model에 모델과 비즈니스 로직을 짜도 상관없습니다.
-/// 단 기능별 폴더에 ViewModel도 넣으면 관리하거나 보기는 좋을 것 같습니다.
-
 @Observable
-class CategoryViewModel {
-    var selectedCategoryIndex: Int = 0 {
-        didSet {
-            // 인덱스 유효성 검사
-            if selectedCategoryIndex < 0 || selectedCategoryIndex >= categories.count {
-                selectedCategoryIndex = oldValue
-            }
-        }
-    }
-    var categories: [Category] = []
-    
-    var modelContext: ModelContext?
-    
+class CategoryFilterViewModel {
+    var categories: [Category]
+
     init() {
-        setupInitialData()
-    }
-    
-    func setupInitialData() {
-        // 기본 카테고리와 태그 데이터 설정
-        let techTags = [
-            ChildCategory(type: .computerScience),
-            ChildCategory(type: .network),
-            ChildCategory(type: .security),
-            ChildCategory(type: .infrastructure),
-            ChildCategory(type: .softwareEngineering)
-        ]
-        
-        let programmingTags = [
-            ChildCategory(type: .swift),
-            ChildCategory(type: .cpp),
-            ChildCategory(type: .python),
-            ChildCategory(type: .java),
-            ChildCategory(type: .javascript),
-            ChildCategory(type: .react)
-        ]
-        
-        let selfDevTags = [
-            ChildCategory(type: .codingTest),
-            ChildCategory(type: .interview),
-            ChildCategory(type: .sideProject)
-        ]
-        
-        let etcTags = [
-            ChildCategory(type: .idea),
-            ChildCategory(type: .design),
-            ChildCategory(type: .product),
-            ChildCategory(type: .uiux)
-        ]
-        
-        categories = [
-            Category(title: "기술", tags: techTags),
-            Category(title: "프로그래밍", tags: programmingTags),
-            Category(title: "자기계발", tags: selfDevTags),
-            Category(title: "기타", tags: etcTags)
+        self.categories = [
+            Category(type: .programming, tags: [
+                ChildCategory(type: .swift), ChildCategory(type: .python),
+                ChildCategory(type: .java), ChildCategory(type: .javascript),
+                ChildCategory(type: .react), ChildCategory(type: .cpp)
+            ]),
+            Category(type: .tech, tags: [
+                ChildCategory(type: .computerScience), ChildCategory(type: .network),
+                ChildCategory(type: .security), ChildCategory(type: .infrastructure),
+                ChildCategory(type: .softwareEngineering)
+            ]),
+            Category(type: .selfDevelopment, tags: [
+                ChildCategory(type: .codingTest), ChildCategory(type: .interview),
+                ChildCategory(type: .sideProject)
+            ]),
+            Category(type: .etc, tags: [
+                ChildCategory(type: .idea), ChildCategory(type: .design),
+                ChildCategory(type: .product), ChildCategory(type: .uiux)
+            ])
         ]
     }
-    
-    func saveData() {
-        guard let modelContext = modelContext else { return }
-        
-        // 기존 데이터 모두 삭제 시도 (실패해도 계속 진행)
-        do {
-            let descriptor = FetchDescriptor<Category>()
-            let existingCategories = try modelContext.fetch(descriptor)
-            
-            for category in existingCategories {
-                modelContext.delete(category)
+
+    var selectedTags: [ChildCategory] {
+        categories.flatMap { $0.tags }.filter { $0.isSelected }
+    }
+
+    func toggleSelection(for tag: ChildCategory) {
+        guard let categoryIndex = categories.firstIndex(where: { $0.tags.contains(where: { $0.id == tag.id }) }) else { return }
+        guard let tagIndex = categories[categoryIndex].tags.firstIndex(where: { $0.id == tag.id }) else { return }
+
+        if categories[categoryIndex].tags[tagIndex].isSelected {
+            categories[categoryIndex].tags[tagIndex].isSelected = false
+        } else {
+            guard selectedTags.count < 3 else { return }
+            categories[categoryIndex].tags[tagIndex].isSelected = true
+        }
+    }
+
+    func clearSelections() {
+        for categoryIndex in categories.indices {
+            for tagIndex in categories[categoryIndex].tags.indices {
+                categories[categoryIndex].tags[tagIndex].isSelected = false
             }
-            
-            // 새 데이터 저장
-            for category in categories {
-                modelContext.insert(category)
-            }
-            
-            try modelContext.save()
-        } catch {
-            print("Error saving data: \(error)")
         }
-    }
-    
-    func loadData() {
-        guard let modelContext = modelContext else {
-            setupInitialData() // modelContext가 없으면 메모리에라도 초기 데이터 설정
-            return
-        }
-        
-        do {
-            let descriptor = FetchDescriptor<Category>()
-            let fetchedCategories = try modelContext.fetch(descriptor)
-            
-            if !fetchedCategories.isEmpty {
-                categories = fetchedCategories
-                // 카테고리가 로드된 후 인덱스 유효성 확인
-                if selectedCategoryIndex >= categories.count {
-                    selectedCategoryIndex = 0
-                }
-            } else {
-                // 데이터가 없으면 초기 데이터 설정
-                setupInitialData()
-                saveData() // 저장 시도
-            }
-        } catch {
-            print("Error fetching data: \(error)")
-            // 오류 발생 시 메모리에라도 초기 데이터 설정
-            setupInitialData()
-        }
-    }
-    
-    func toggleTagSelection(tagIndex: Int) {
-        guard let currentCategory = safeCurrentCategory,
-              tagIndex >= 0, tagIndex < currentCategory.tags.count else {
-            return // 안전하게 인덱스 검사
-        }
-        
-        currentCategory.tags[tagIndex].isSelected.toggle()
-    }
-    
-    // 안전하게 현재 카테고리 접근
-    var safeCurrentCategory: Category? {
-        guard !categories.isEmpty,
-              selectedCategoryIndex >= 0,
-              selectedCategoryIndex < categories.count else {
-            return nil
-        }
-        return categories[selectedCategoryIndex]
-    }
-    
-    var currentCategory: Category {
-        return safeCurrentCategory ?? Category(title: "")
     }
 }
