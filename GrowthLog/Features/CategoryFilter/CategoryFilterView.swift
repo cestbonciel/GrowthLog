@@ -42,7 +42,7 @@ struct CategoryFilterView: View {
                     .bold()
                     .padding()
                     .background(Color.green)
-                    .foregroundColor(.white)
+                    .foregroundColor(.black)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
                     .padding()
                 }
@@ -82,6 +82,9 @@ private struct SelectedTagsHeaderView: View {
         .overlay(alignment: .trailing) {
             Button(action: onClear) {
                 Image(systemName: "x.circle")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 20, height: 20)
                     .foregroundStyle(.gray)
                     .padding()
             }
