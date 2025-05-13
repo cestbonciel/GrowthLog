@@ -32,33 +32,33 @@ class CategoryViewModel {
     func setupInitialData() {
         // 기본 카테고리와 태그 데이터 설정
         let techTags = [
-            Tag(name: "컴퓨터과학"),
-            Tag(name: "네트워크"),
-            Tag(name: "보안"),
-            Tag(name: "인프라"),
-            Tag(name: "소프트웨어 공학")
+            ChildCategory(name: "컴퓨터과학"),
+            ChildCategory(name: "네트워크"),
+            ChildCategory(name: "보안"),
+            ChildCategory(name: "인프라"),
+            ChildCategory(name: "소프트웨어 공학")
         ]
         
         let programmingTags = [
-            Tag(name: "Swift"),
-            Tag(name: "C++"),
-            Tag(name: "Python"),
-            Tag(name: "Java"),
-            Tag(name: "JavaScript"),
-            Tag(name: "React")
+            ChildCategory(name: "Swift"),
+            ChildCategory(name: "C++"),
+            ChildCategory(name: "Python"),
+            ChildCategory(name: "Java"),
+            ChildCategory(name: "JavaScript"),
+            ChildCategory(name: "React")
         ]
         
         let selfDevTags = [
-            Tag(name: "코딩테스트"),
-            Tag(name: "면접"),
-            Tag(name: "사이드프로젝트")
+            ChildCategory(name: "코딩테스트"),
+            ChildCategory(name: "면접"),
+            ChildCategory(name: "사이드프로젝트")
         ]
         
         let etcTags = [
-            Tag(name: "IDEA"),
-            Tag(name: "디자인"),
-            Tag(name: "Product"),
-            Tag(name: "UIUX")
+            ChildCategory(name: "IDEA"),
+            ChildCategory(name: "디자인"),
+            ChildCategory(name: "Product"),
+            ChildCategory(name: "UIUX")
         ]
         
         categories = [

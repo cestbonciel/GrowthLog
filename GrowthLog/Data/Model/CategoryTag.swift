@@ -11,16 +11,16 @@ import SwiftData
 @Model
 class Category {
     var title: String
-    var tags: [Tag]
+    var tags: [ChildCategory]
     
-    init(title: String, tags: [Tag] = []) {
+    init(title: String, tags: [ChildCategory] = []) {
         self.title = title
         self.tags = tags
     }
 }
 
 @Model
-class Tag {
+class ChildCategory {
     var name: String
     var isSelected: Bool
     
