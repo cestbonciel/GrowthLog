@@ -83,7 +83,3 @@ struct SearchFilterView: View {
     SearchFilterView()
 
 }
-
-#Preview {
-    SearchFilterView()
-}
