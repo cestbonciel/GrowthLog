@@ -27,6 +27,7 @@ struct GrowthLogApp: App {
     var body: some Scene {
         WindowGroup {
             LogMainView()
+            //WeeklyStatsView()
             //CategoryFilterView(name: "magnifyingglass", color: .black)
         }
         /// TODO: 모델이 준비되면 주석 해제
