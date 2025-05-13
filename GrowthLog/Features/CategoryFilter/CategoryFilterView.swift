@@ -109,7 +109,7 @@ struct CategoryFilterView: View {
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
     let container = try! ModelContainer(
         for: Category.self,
-        Tag.self,
+        ChildCategory.self,
         configurations: config
     )
     
@@ -117,8 +117,8 @@ struct CategoryFilterView: View {
     let previewContext = container.mainContext
     let sampleCategories = [
         Category(title: "미리보기 카테고리", tags: [
-            Tag(name: "태그1"),
-            Tag(name: "태그2")
+            ChildCategory(name: "태그1"),
+            ChildCategory(name: "태그2")
         ])
     ]
     
