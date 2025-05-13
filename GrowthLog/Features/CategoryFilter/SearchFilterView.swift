@@ -46,12 +46,16 @@ struct SearchFilterView: View {
                         } else {
                             // 검색 결과
                             LazyVStack(alignment: .leading, spacing: 12) {
-                                ForEach(results, id: \.self) { item in
-                                    Text(item)
-                                        .padding(.horizontal)
-                                        .padding(.vertical, 8)
-                                        .background(Color.gray.opacity(0.1))
-                                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                                ForEach(results, id: \.id) { item in
+                                    NavigationLink {
+                                        LogDetailView(logMainData: item)
+                                    } label: {
+                                        LogListCell(item: item)
+                                    }
+                                    .buttonStyle(.plain)
+
+
+
                                 }
                             }
                             .padding()
