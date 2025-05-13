@@ -32,33 +32,33 @@ class CategoryViewModel {
     func setupInitialData() {
         // 기본 카테고리와 태그 데이터 설정
         let techTags = [
-            ChildCategory(name: "컴퓨터과학"),
-            ChildCategory(name: "네트워크"),
-            ChildCategory(name: "보안"),
-            ChildCategory(name: "인프라"),
-            ChildCategory(name: "소프트웨어 공학")
+            ChildCategory(type: .computerScience),
+            ChildCategory(type: .network),
+            ChildCategory(type: .security),
+            ChildCategory(type: .infrastructure),
+            ChildCategory(type: .softwareEngineering)
         ]
         
         let programmingTags = [
-            ChildCategory(name: "Swift"),
-            ChildCategory(name: "C++"),
-            ChildCategory(name: "Python"),
-            ChildCategory(name: "Java"),
-            ChildCategory(name: "JavaScript"),
-            ChildCategory(name: "React")
+            ChildCategory(type: .swift),
+            ChildCategory(type: .cpp),
+            ChildCategory(type: .python),
+            ChildCategory(type: .java),
+            ChildCategory(type: .javascript),
+            ChildCategory(type: .react)
         ]
         
         let selfDevTags = [
-            ChildCategory(name: "코딩테스트"),
-            ChildCategory(name: "면접"),
-            ChildCategory(name: "사이드프로젝트")
+            ChildCategory(type: .codingTest),
+            ChildCategory(type: .interview),
+            ChildCategory(type: .sideProject)
         ]
         
         let etcTags = [
-            ChildCategory(name: "IDEA"),
-            ChildCategory(name: "디자인"),
-            ChildCategory(name: "Product"),
-            ChildCategory(name: "UIUX")
+            ChildCategory(type: .idea),
+            ChildCategory(type: .design),
+            ChildCategory(type: .product),
+            ChildCategory(type: .uiux)
         ]
         
         categories = [
@@ -93,9 +93,9 @@ class CategoryViewModel {
     }
     
     func loadData() {
-        guard let modelContext = modelContext else { 
+        guard let modelContext = modelContext else {
             setupInitialData() // modelContext가 없으면 메모리에라도 초기 데이터 설정
-            return 
+            return
         }
         
         do {
@@ -111,7 +111,7 @@ class CategoryViewModel {
             } else {
                 // 데이터가 없으면 초기 데이터 설정
                 setupInitialData()
-                try? saveData() // 저장 시도 (오류 무시)
+                saveData() // 저장 시도
             }
         } catch {
             print("Error fetching data: \(error)")
