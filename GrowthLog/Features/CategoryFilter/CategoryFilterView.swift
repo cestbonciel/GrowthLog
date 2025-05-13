@@ -11,7 +11,6 @@ import SwiftData
 struct CategoryFilterView: View {
     @Environment(\.dismiss) private var dismiss
 
-
     @State private var viewModel = CategoryFilterViewModel()
     @State private var showLimitAlert = false
 
@@ -72,7 +71,7 @@ private struct SelectedTagsHeaderView: View {
                     Text(tag.name)
                         .padding(.vertical, 6)
                         .padding(.horizontal, 12)
-                        .bold()
+                        //.bold()
                         .background(Color.green)
                         .foregroundColor(tag.isSelected ? .black : .primary)
                         .clipShape(RoundedRectangle(cornerRadius: 10))
@@ -89,7 +88,7 @@ private struct SelectedTagsHeaderView: View {
         }
         .overlay {
             RoundedRectangle(cornerRadius: 16)
-                .stroke(.gray, lineWidth: 1)
+                .stroke(.gray.opacity(0.6), lineWidth: 1)
                 .frame(maxWidth: .infinity)
                 .frame(height: 60)
         }
@@ -98,7 +97,7 @@ private struct SelectedTagsHeaderView: View {
     }
 }
 
-
+//태그 ScrollView
 private struct CategorySectionView: View {
     @Binding var showLimitAlert: Bool
 
