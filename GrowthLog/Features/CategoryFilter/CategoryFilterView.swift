@@ -11,8 +11,8 @@ import SwiftData
 /// 임시 뷰입니다 - 카테고리와 태그 기반 검색 기능 필터링 구현 뷰입니다.
 struct CategoryFilterView: View {
     @Environment(\.modelContext) private var modelContext
-    @State private var viewModel = CategoryViewModel()
-    @State private var isLoading = true
+    @State var viewModel = CategoryViewModel()
+    @State var isLoading = true
     @State private var errorMessage: String? = nil
 
     var body: some View {
@@ -106,26 +106,55 @@ struct CategoryFilterView: View {
 }
 
 #Preview {
+    // 미리보기를 위한 인메모리 컨테이너 생성
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
-    let container = try! ModelContainer(
-        for: Category.self,
-        ChildCategory.self,
-        configurations: config
-    )
+    let container = try! ModelContainer(for: Category.self, ChildCategory.self, configurations: config)
     
-    // 미리보기를 위한 샘플 데이터 추가
-    let previewContext = container.mainContext
-    let sampleCategories = [
-        Category(title: "미리보기 카테고리", tags: [
-            ChildCategory(name: "태그1"),
-            ChildCategory(name: "태그2")
-        ])
-    ]
+    // 테스트 데이터 생성 및 삽입
+    let viewModel = CategoryViewModel()
+    viewModel.setupInitialData()
     
-    for category in sampleCategories {
-        previewContext.insert(category)
+    for category in viewModel.categories {
+        container.mainContext.insert(category)
     }
     
     return CategoryFilterView()
         .modelContainer(container)
+}
+
+// 편의를 위한 미리보기 - 데이터 로드 없이 바로 결과 확인용
+#Preview {
+    // 미리보기를 위한 인메모리 컨테이너 생성
+    let config = ModelConfiguration(isStoredInMemoryOnly: true)
+    let container = try! ModelContainer(for: Category.self, ChildCategory.self, configurations: config)
+    
+    // 테스트 데이터 생성 및 삽입
+    let viewModel = CategoryViewModel()
+    viewModel.setupInitialData()
+    
+    for category in viewModel.categories {
+        container.mainContext.insert(category)
+    }
+    
+    return CategoryFilterView()
+        .modelContainer(container)
+}
+
+// 편의를 위한 미리보기 - 데이터 로드 없이 바로 결과 확인용
+struct PreloadedCategoryFilterView: View {
+    @State private var viewModel: CategoryViewModel
+    
+    init() {
+        let vm = CategoryViewModel()
+        vm.setupInitialData()
+        self._viewModel = State(initialValue: vm)
+    }
+    
+    var body: some View {
+        CategoryFilterView(viewModel: viewModel, isLoading: false)
+    }
+}
+
+#Preview("데이터 로드됨") {
+    PreloadedCategoryFilterView()
 }
