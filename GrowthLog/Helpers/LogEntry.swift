@@ -21,7 +21,7 @@ struct LogEntry: Codable {
     let keep: String
     let problem: String
     let `try`: String
-    
+    // json 키 나열
     enum CodingKeys: String, CodingKey {
         case id
         case creationDate
