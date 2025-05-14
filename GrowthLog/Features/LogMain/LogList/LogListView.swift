@@ -10,6 +10,9 @@ import SwiftData
 struct LogListView: View {
     @State private var isShowSampleCell = false
     @State private var isShowEditorView = false
+    @State private var jsonLogs: [LogData] = [] // JSON 원본 데이터를 위한 배열
+    @State private var isLoading = true
+    
     @Environment(\.modelContext) private var modelContext
     @StateObject private var viewModel: LogListViewModel
     
@@ -22,27 +25,73 @@ struct LogListView: View {
     var body: some View {
         NavigationStack {
             VStack {
-                if viewModel.logs.isEmpty {
+                if isLoading {
+                    ProgressView("로딩 중…")
+                }
+                else if !jsonLogs.isEmpty {
+                    // JSON 원본 데이터가 있으면
+                    jsonLogList
+                }
+                else if viewModel.logs.isEmpty {
                     Text("아직 작성한 회고가 없습니다.")
                         .padding()
-                } else {
+                }
+                else {
                     logList
                 }
             }
             .navigationTitle("회고")
-            .toolbar {
-                toolbarItems
-            }
-            .navigationDestination(isPresented: $isShowSampleCell) {
-                SampleCell()
-            }
+            .toolbar { toolbarItems }
+            .navigationDestination(isPresented: $isShowSampleCell) { SampleCell() }
             .navigationDestination(isPresented: $isShowEditorView) {
                 LogEditorView(viewModel: viewModel)
             }
             .onAppear {
                 viewModel.fetchLogs()
+                loadJsonDirectly()
             }
         }
+    }
+    
+    private var existingLogList: some View {
+        List {
+            ForEach(viewModel.logs) { log in
+                logListItem(for: log)
+            }
+        }
+        .listStyle(.plain)
+        .padding(EdgeInsets(top: 10, leading: 10, bottom: 20, trailing: 10))
+    }
+    
+    private var jsonLogList: some View {
+        List {
+            ForEach(jsonLogs) { log in
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(log.title)
+                        .font(.headline)
+                    
+                    Text("카테고리: \(log.categoryType) / \(log.childCategoryType)")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                    
+                    Text("작성일: \(log.creationDate)")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    
+                    Text("Keep: \(log.keep)")
+                        .lineLimit(2)
+                    
+                    Text("Problem: \(log.problem)")
+                        .lineLimit(2)
+                    
+                    Text("Try: \(log.tryContent)")
+                        .lineLimit(2)
+                }
+                .padding(.vertical, 5)
+            }
+        }
+        .listStyle(.plain)
+        .padding(EdgeInsets(top: 10, leading: 10, bottom: 20, trailing: 10))
     }
     
     // 리스트 뷰를 별도 속성으로 분리
@@ -59,12 +108,10 @@ struct LogListView: View {
     // 리스트 항목을 별도 메서드로 분리
     private func logListItem(for log: LogMainData) -> some View {
         ZStack(alignment: .leading) {
-            // LogListCell 호출 시 매개변수 이름 확인 (logMainData인지 log인지)
             LogListCell(logMainData: log)
                 .padding(.vertical, 5)
             
             NavigationLink {
-                // 매개변수 이름을 modelContext로 변경
                 LogDetailView(log: log, modelContext: modelContext)
             } label: {
                 EmptyView()
@@ -79,6 +126,26 @@ struct LogListView: View {
             } label: {
                 Label("삭제", systemImage: "trash")
             }
+        }
+    }
+    
+    private func loadJsonDirectly() {
+        guard let url = Bundle.main.url(forResource: "log_data", withExtension: "json") else {
+            print("JSON 파일을 찾을 수 없습니다")
+            isLoading = false
+            return
+        }
+        
+        do {
+            let data = try Data(contentsOf: url)
+            let decoder = JSONDecoder()
+            let logJson = try decoder.decode(LogJson.self, from: data)
+            self.jsonLogs = logJson.logs
+            isLoading = false
+            print("JSON 데이터 로드 성공: \(logJson.logs.count)개의 로그")
+        } catch {
+            print("JSON 파싱 오류: \(error)")
+            isLoading = false
         }
     }
     

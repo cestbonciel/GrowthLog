@@ -15,6 +15,8 @@ final class LogListViewModel: ObservableObject {
     @Published var categories: [Category] = []
     @Published var childCategories: [ChildCategory] = []
     @Published var errorMessage: String?
+    @Published var jsonLogs: [LogData] = []
+    @Published var isJsonLoading = true
     
     init(modelContext: ModelContext) {
         self.modelContext = modelContext
@@ -225,21 +227,6 @@ final class LogListViewModel: ObservableObject {
     
     // JSON 파일을 파싱하고 SwiftData에 저장
     func loadJsonData() {
-        // 카테고리가 제대로 로드되었는지 확인
-        if categories.isEmpty {
-            print("경고: JSON 로드를 시작하기 전에 카테고리가 비어 있습니다. 카테고리 재로드 시도...")
-            fetchCategories()
-            
-            // 그래도 비어있다면 경고
-            if categories.isEmpty {
-                print("심각한 오류: 카테고리를 로드할 수 없습니다. JSON 데이터 파싱이 실패할 가능성이 높습니다.")
-            }
-        }
-        
-        // 현재 카테고리 상태 출력
-        print("JSON 로드 전 카테고리 상태:")
-        categories.forEach { print("ID: \($0.id), 타입: \($0.type.rawValue)") }
-        
         guard let url = Bundle.main.url(forResource: "log_data", withExtension: "json") else {
             errorMessage = "Cannot find log_data.json in the app bundle"
             return
@@ -263,6 +250,23 @@ final class LogListViewModel: ObservableObject {
             let decoder = JSONDecoder()
             let logJson = try decoder.decode(LogJson.self, from: data)
             
+            // 카테고리 사전 생성 (카테고리 관련 문제 회피)
+            let techCategory = Category(type: .tech)
+            let programmingCategory = Category(type: .programming)
+            let selfDevCategory = Category(type: .selfDevelopment)
+            let etcCategory = Category(type: .etc)
+            
+            modelContext.insert(techCategory)
+            modelContext.insert(programmingCategory)
+            modelContext.insert(selfDevCategory)
+            modelContext.insert(etcCategory)
+            
+            // 차일드카테고리 사전 생성
+            let childCategoryMap = createChildCategories()
+            
+            // 임시 컬렉션에 로그 데이터 모으기
+            var newLogs: [LogMainData] = []
+            
             // SwiftData에 데이터 저장
             for logData in logJson.logs {
                 let dateFormatter = DateFormatter()
@@ -273,17 +277,21 @@ final class LogListViewModel: ObservableObject {
                     continue
                 }
                 
-                // 카테고리 찾기
-                let categoryId = logData.categoryId
-                guard let category = findCategory(byId: categoryId) else {
-                    print("Category not found for ID: \(categoryId)")
+                // ID 기반으로 적절한 카테고리 선택
+                let category: Category
+                switch logData.categoryId {
+                case 1: category = techCategory
+                case 2: category = programmingCategory
+                case 3: category = selfDevCategory
+                case 4: category = etcCategory
+                default:
+                    print("Invalid category ID: \(logData.categoryId)")
                     continue
                 }
                 
-                // 차일드 카테고리 찾기
-                let childCategoryType = logData.childCategoryType
-                guard let childCategory = findChildCategory(byType: childCategoryType) else {
-                    print("Child category not found for type: \(childCategoryType)")
+                // 차일드 카테고리 타입으로 찾기
+                guard let childCategory = childCategoryMap[logData.childCategoryType] else {
+                    print("Child category not found for type: \(logData.childCategoryType)")
                     continue
                 }
                 
@@ -298,17 +306,35 @@ final class LogListViewModel: ObservableObject {
                     childCategory: childCategory
                 )
                 
+                newLogs.append(logMainData)
                 modelContext.insert(logMainData)
             }
             
-            try modelContext.save()
-            fetchLogs()
+            // 로그 배열 업데이트
+            logs = newLogs
             
+            try modelContext.save()
         } catch {
             errorMessage = "Error loading or parsing the JSON: \(error.localizedDescription)"
             print(errorMessage ?? "")
         }
     }
+    
+    private func createChildCategories() -> [String: ChildCategory] {
+        var map: [String: ChildCategory] = [:]
+        
+        // 모든 차일드 카테고리 타입을 순회하며 인스턴스 생성
+        for type in ChildCategoryType.allCases {
+            let childCategory = ChildCategory(type: type)
+            modelContext.insert(childCategory)
+            map[type.rawValue] = childCategory
+        }
+        
+        return map
+    }
+
+
+    
     
     // 카테고리 ID로 찾기
     private func findCategory(byId id: Int) -> Category? {
