@@ -13,6 +13,19 @@ struct SearchFilterView: View {
     @State private var viewModel = SearchFilterViewModel()
     @State private var isPresented = false
     @State private var searchText = ""
+    @State private var selectedTags: [ChildCategory] = []
+
+
+
+  //카테ㅐ고리 탭 필터링 계산속성
+    var filteredLogs: [LogItem] {
+        guard !selectedTags.isEmpty else { return viewModel.items }
+
+            return viewModel.items.filter { log in
+                !Set(log.category.tags.map(\.id)).isDisjoint(with: selectedTags.map(\.id))
+            }
+        }
+
 
     var body: some View {
         NavigationStack {
@@ -47,6 +60,7 @@ struct SearchFilterView: View {
                             // 검색 결과
                             LazyVStack(alignment: .leading, spacing: 12) {
                                 ForEach(results, id: \.id) { item in
+
                                     NavigationLink {
                                         LogDetailView(logMainData: item)
                                     } label: {
@@ -61,6 +75,7 @@ struct SearchFilterView: View {
                             .padding()
                         }
                     }
+
                 }
                 .searchable(text: $searchText)
             }
@@ -76,7 +91,7 @@ struct SearchFilterView: View {
                 }
             }
             .navigationDestination(isPresented: $isPresented) {
-                CategoryFilterView()
+                CategoryFilterView(selectedTags: $selectedTags)
             }
         }
     }

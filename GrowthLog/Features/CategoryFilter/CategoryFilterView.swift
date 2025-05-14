@@ -9,8 +9,9 @@ import SwiftUI
 import SwiftData
 
 struct CategoryFilterView: View {
-    @Environment(\.dismiss) private var dismiss
+    @Binding var selectedTags: [ChildCategory]
 
+    @Environment(\.dismiss) private var dismiss
     @State private var viewModel = CategoryFilterViewModel()
     @State private var showLimitAlert = false
 
@@ -34,9 +35,12 @@ struct CategoryFilterView: View {
 
                     Button("적용하기") {
                         print("선택된 태그:", viewModel.selectedTags.map { $0.name })
+                        //viewModel.filteredResultsOfChildCategory(for: )
 
+                        selectedTags = viewModel.selectedTags
                         dismiss()
                     }
+
                     .frame(maxWidth: .infinity)
                     .font(.title3)
                     .bold()
@@ -149,8 +153,26 @@ private struct CategorySectionView: View {
 
 
 
+struct StatefulPreviewWrapper<Value, Content: View>: View {
+    @State private var value: Value
+    var content: (Binding<Value>) -> Content
+
+    init(_ initialValue: Value, @ViewBuilder content: @escaping (Binding<Value>) -> Content) {
+        self._value = State(initialValue: initialValue)
+        self.content = content
+    }
+
+    var body: some View {
+        content($value)
+    }
+}
+
+
+
 
 
 #Preview {
-    CategoryFilterView()
+    StatefulPreviewWrapper([ChildCategory(type: .swift)]) { binding in
+            CategoryFilterView(selectedTags: binding)
+        }
 }
