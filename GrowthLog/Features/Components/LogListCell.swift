@@ -6,9 +6,10 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct LogListCell: View {
-    let item: LogItem
+    let logMainData: LogMainData
     
     var body: some View {
         ZStack {
@@ -19,7 +20,7 @@ struct LogListCell: View {
             VStack(spacing: 0) {
                 HStack {
                     VStack(alignment: .leading) {
-                        Text(item.category.title)
+                        Text(logMainData.category?.title ?? "카테고리 없음")
                             .font(.caption)
                             .foregroundStyle(.white)
                             .padding(.horizontal, 10)
@@ -28,21 +29,19 @@ struct LogListCell: View {
                                 RoundedRectangle(cornerRadius: 7)
                                     .fill(.growthGreen)
                             )
-                        HStack(spacing: 0) {
-                            ForEach(item.category.tags) {
-                                Text("#\($0.name)")
-                                    .font(.caption)
-                                    .padding(.horizontal, 5)
-                            }
+                        if let childCategory = logMainData.childCategory {
+                            Text("#\(childCategory.name)")
+                                .font(.caption)
+                                .padding(.horizontal, 5)
                         }
                     }
                     
                     Spacer()
                     
                     VStack(alignment: .trailing, spacing: 0) {
-                        Text(item.formattedDate)
+                        Text(logMainData.formattedDate)
                         
-                        Text(item.formattedtime)
+                        Text(logMainData.formattedtime)
                     }
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -55,7 +54,7 @@ struct LogListCell: View {
                     .padding(.horizontal, 20)
                 
                 HStack {
-                    Text(item.title ?? item.keep)
+                    Text(logMainData.title ?? logMainData.keep)
                         .font(.subheadline)
                         .padding()
                         .padding(.horizontal, 5)
@@ -68,9 +67,29 @@ struct LogListCell: View {
 }
 
 #Preview {
-    let categorys: Category = Category(type: .tech, tags: [ChildCategory(type: .computerScience), ChildCategory(type: .network), ChildCategory(type: .security)])
+    // SwiftData 미리보기 환경 설정
+    let config = ModelConfiguration(isStoredInMemoryOnly: true)
+    let container = try! ModelContainer(for: LogMainData.self, Category.self, ChildCategory.self, configurations: config)
     
-    LogListCell(item: LogItem(title: "SwiftUI 학습", category: categorys, keep: "학습 개념 이해", problem: "응용", tryContents: "많이 사용해 보기", date: Date().addingTimeInterval(-1*24*3600)))
-    LogListCell(item: LogItem(title: nil,           category: categorys, keep: "학습 개념 이해", problem: "응용", tryContents: "많이 사용해 보기", date: Date().addingTimeInterval(-1*24*3600)))
+    // 더미 ModelContext 생성
+    let context = container.mainContext
+    
+    // 미리보기용 카테고리 및 태그 생성
+    let previewCategory = Category(type: .programming)
+    let previewTag = ChildCategory(type: .swift)
+    previewTag.category = previewCategory
+    
+    // 미리보기용 로그 생성
+    let previewLog = LogMainData(
+        id: 1,
+        title: "SwiftUI 학습",
+        keep: "SwiftUI 기본 개념을 이해했다",
+        problem: "복잡한 레이아웃 구성이 어려웠다",
+        tryContent: "더 많은 예제를 통해 연습해보기",
+        creationDate: Date(),
+        category: previewCategory,
+        childCategory: previewTag
+    )
+    
+    return LogListCell(logMainData: previewLog)
 }
-
