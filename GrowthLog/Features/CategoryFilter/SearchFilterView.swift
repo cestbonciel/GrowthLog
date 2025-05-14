@@ -15,65 +15,71 @@ struct SearchFilterView: View {
     @State private var searchText = ""
     @State private var selectedTags: [ChildCategory] = []
 
-  //카테ㅐ고리 탭 필터링 계산속성
-//    var filteredLogs: [LogItem] {
-//        guard !selectedTags.isEmpty else { return viewModel.items }
-//
-//            return viewModel.items.filter { log in
-//                !Set(log.category.tags.map(\.id)).isDisjoint(with: selectedTags.map(\.id))
-//            }
-//        }
+    // 1️⃣ 태그로 먼저 필터링
+    private var tagFilteredLogs: [LogItem] {
+        guard !selectedTags.isEmpty else {
+            return viewModel.items
+        }
+        let tagIDs = Set(selectedTags.map(\.id))
+        return viewModel.items.filter { log in
+            !tagIDs.isDisjoint(with: log.category.tags.map(\.id))
+        }
+    }
 
+    // 2️⃣ 그다음 검색어로 필터링
+    private var finalFilteredLogs: [LogItem] {
+        guard !searchText.isEmpty else {
+            return tagFilteredLogs
+        }
+        return tagFilteredLogs.filter { log in
+            // 예: 제목 또는 본문에 검색어가 포함된 경우
+            log.title?.localizedCaseInsensitiveContains(searchText) == true ||
+            log.keep.localizedCaseInsensitiveContains(searchText) ||
+            log.problem.localizedCaseInsensitiveContains(searchText) ||
+            log.tryContents.localizedCaseInsensitiveContains(searchText)
+        }
+    }
 
     var body: some View {
         NavigationStack {
             VStack {
                 ScrollView {
-                    if searchText.isEmpty {
-                        // 초기
+                    if searchText.isEmpty && selectedTags.isEmpty {
+                        // 초기 안내
                         HStack {
-                            Text("검색어를 입력해주세요")
+                            Text("검색어를 입력하거나 필터를 적용해주세요")
                                 .foregroundColor(.gray)
                                 .font(.title3)
-
                             Image(systemName: "text.page.badge.magnifyingglass")
                                 .resizable()
                                 .scaledToFit()
                                 .frame(width: 20, height: 20)
                                 .foregroundColor(.gray)
-
                         }
                         .padding(.top, 100)
 
                     } else {
-                        let results = viewModel.filteredResults(for: searchText)
+                        let results = finalFilteredLogs
 
                         if results.isEmpty {
-                            // 검색 결과 없음
                             Text("검색 결과가 없습니다")
                                 .foregroundColor(.gray)
                                 .font(.title3)
                                 .padding(.top, 100)
                         } else {
-                            // 검색 결과
                             LazyVStack(alignment: .leading, spacing: 12) {
                                 ForEach(results, id: \.id) { item in
-
                                     NavigationLink {
                                         LogDetailView(logMainData: item)
                                     } label: {
                                         LogListCell(item: item)
                                     }
                                     .buttonStyle(.plain)
-
-
-
                                 }
                             }
                             .padding()
                         }
                     }
-
                 }
                 .searchable(text: $searchText)
             }
