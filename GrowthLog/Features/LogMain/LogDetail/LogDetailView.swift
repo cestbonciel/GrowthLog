@@ -2,7 +2,7 @@
 //  LogDetailView.swift
 //  GrowthLog
 //
-//  Created by Seohyun Kim Kim on 5/12/25.
+//  Created by Jooyong Lee on 5/12/25.
 //
 
 import SwiftUI
