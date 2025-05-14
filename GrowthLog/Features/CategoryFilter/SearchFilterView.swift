@@ -16,8 +16,10 @@ struct SearchFilterView: View {
 
     // 2) 검색어 & 태그 필터링 상태
     @State private var searchText = ""
-    @State private var selectedTags: [ChildCategory] = []
+    @State private var selectedTags: [ChildCategoryType] = []
     @State private var isShowingFilter = false
+
+
 
     // 3) 태그 필터 + 텍스트 필터 조합 계산 프로퍼티
     private var filteredLogs: [LogMainData] {
@@ -26,7 +28,7 @@ struct SearchFilterView: View {
         if !selectedTags.isEmpty {
             result = result.filter { log in
                 guard let child = log.childCategory else { return false }
-                return selectedTags.contains(where: { $0.id == child.id })
+               	return selectedTags.contains(child.type)
             }
         }
         // 3-2) 검색어 필터

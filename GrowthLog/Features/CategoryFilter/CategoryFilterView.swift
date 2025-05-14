@@ -9,7 +9,8 @@ import SwiftUI
 import SwiftData
 
 struct CategoryFilterView: View {
-    @Binding var selectedTags: [ChildCategory]
+    @Binding var selectedTags: [ChildCategoryType]
+
 
     @Environment(\.dismiss) private var dismiss
     @State private var viewModel = CategoryFilterViewModel()
@@ -37,7 +38,7 @@ struct CategoryFilterView: View {
                         print("선택된 태그:", viewModel.selectedTags.map { $0.name })
                         //viewModel.filteredResultsOfChildCategory(for: )
 
-                        selectedTags = viewModel.selectedTags
+                        selectedTags = viewModel.selectedTags.map(\.type)
                         dismiss()
                     }
 
@@ -172,7 +173,8 @@ struct StatefulPreviewWrapper<Value, Content: View>: View {
 
 
 #Preview {
-    StatefulPreviewWrapper([ChildCategory(type: .swift)]) { binding in
-            CategoryFilterView(selectedTags: binding)
-        }
+
+    StatefulPreviewWrapper([ChildCategoryType.swift]) { binding in
+        CategoryFilterView(selectedTags: binding)
+    }
 }
