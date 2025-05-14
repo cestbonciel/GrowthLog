@@ -23,6 +23,7 @@ struct GrowthLogApp: App {
             UITabBar.appearance().scrollEdgeAppearance = appearance
         }
     }
+    
     /// 임시로 설정한 뷰입니다. MainView로 넣어야 합니다.
     var body: some Scene {
         WindowGroup {
@@ -31,7 +32,7 @@ struct GrowthLogApp: App {
             //CategoryFilterView(name: "magnifyingglass", color: .black)
         }
         /// TODO: 모델이 준비되면 주석 해제
-        //.modelContainer(for: [Category.self, Tag.self])
+        .modelContainer(for: [LogMainData.self, Category.self, ChildCategory.self])
     }
     
     
