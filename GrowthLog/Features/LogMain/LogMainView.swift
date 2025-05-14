@@ -19,7 +19,7 @@ struct LogMainView: View {
             LogListView()
                 .tabItem { Image(systemName: "square.stack.3d.up.fill") }
                 .tag(1)
-            StatsticsView()
+            StatisticsView()
                 .tabItem { Image(systemName: "chart.xyaxis.line") }
                 .tag(2)
         }
