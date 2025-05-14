@@ -4,103 +4,135 @@
 //
 //  Created by Seohyun Kim Kim on 5/12/25.
 //
-
 import SwiftUI
-
-// MARK: Dummy Data - 원래 Data > Model
-struct LogItem: Identifiable, Hashable {
-    let id = UUID()
-    var title: String?
-    var category: Category
-    var keep: String
-    var problem: String
-    var tryContents: String
-    let date: Date
-    
-    var URL: URL?
-    
-    // 날짜 포맷
-    var formattedDate: String {
-        let df = DateFormatter()
-        df.dateFormat = "yyyy.MM.dd"
-        return df.string(from: date)
-    }
-    
-    // 시간 포맷
-    var formattedtime: String {
-        let df = DateFormatter()
-        df.dateFormat = "hh:mm a"
-        return df.string(from: date)
-    }
-}
+import SwiftData
 
 struct LogListView: View {
     @State private var isShowSampleCell = false
+    @State private var isShowEditorView = false
+    @Environment(\.modelContext) private var modelContext
+    @StateObject private var viewModel: LogListViewModel
     
-    static let categorys: [Category] = [
-        Category(type: .tech, tags: [ChildCategory(type: .computerScience), ChildCategory(type: .network), ChildCategory(type: .security)]),
-        Category(type: .programming, tags: [ChildCategory(type: .swift), ChildCategory(type: .cpp), ChildCategory(type: .python)]),
-        Category(type: .programming, tags: [ChildCategory(type: .swift), ChildCategory(type: .java), ChildCategory(type: .react)]),
-        Category(type: .selfDevelopment, tags: [ChildCategory(type: .codingTest), ChildCategory(type: .interview), ChildCategory(type: .sideProject)]),
-        Category(type: .etc, tags: [ChildCategory(type: .computerScience), ChildCategory(type: .product), ChildCategory(type: .uiux)])
-    ]
-    
-    private let items: [LogItem] = [
-        .init(title: "SwiftUI 학습",       category: LogListView.categorys[0], keep: "학습 개념 이해", problem: "응용", tryContents: "많이 사용해 보기", date: Date().addingTimeInterval(-1*24*3600)),
-        .init(title: nil,                 category: LogListView.categorys[2], keep: "학습 개념 이해", problem: "응용", tryContents: "많이 사용해 보기", date: Date().addingTimeInterval(-1*24*3600)),
-        .init(title: "CoreData CRUD 구현", category: LogListView.categorys[1], keep: "학습 개념 이해", problem: "응용", tryContents: "많이 사용해 보기", date: Date().addingTimeInterval(-2*24*3600)),
-        .init(title: "MVVM 구조 적용",      category: LogListView.categorys[3], keep: "학습 개념 이해", problem: "응용", tryContents: "많이 사용해 보기", date: Date().addingTimeInterval(-3*24*3600)),
-        .init(title: "UI 리팩토링",         category: LogListView.categorys[4], keep: "학습 개념 이해", problem: "응용", tryContents: "많이 사용해 보기", date: Date().addingTimeInterval(-4*24*3600))
-    ]
+    init(modelContext: ModelContext) {
+        _viewModel = StateObject(
+            wrappedValue: LogListViewModel(modelContext: modelContext)
+        )
+    }
     
     var body: some View {
         NavigationStack {
             VStack {
-                if items.isEmpty {
+                if viewModel.logs.isEmpty {
                     Text("아직 작성한 회고가 없습니다.")
+                        .padding()
                 } else {
-                    List {
-                        ForEach(items) { item in
-                            ZStack(alignment: .leading) {
-                                LogListCell(item: item)
-                                    .padding(.vertical, 5)
-                                NavigationLink {
-                                    LogDetailView(logMainData: item)
-                                } label: {
-                                    EmptyView()
-                                }
-                                .opacity(0.0)
-                            }
-                            .listRowSeparator(.hidden)
-                            .listRowBackground(Color.clear)
-                        }
-                    }
-                    .listStyle(.plain)
-                    .padding(EdgeInsets(top: 10, leading: 10, bottom: 20, trailing: 10))
-                    
+                    logList
                 }
-                
             }
             .navigationTitle("회고")
             .toolbar {
-                ToolbarItem {
-                    Button {
-                        isShowSampleCell = true
-                    } label: {
-                        Image(systemName: "gearshape.fill")
-                    }
-                }
+                toolbarItems
             }
             .navigationDestination(isPresented: $isShowSampleCell) {
                 SampleCell()
             }
+            .navigationDestination(isPresented: $isShowEditorView) {
+                LogEditorView(viewModel: viewModel)
+            }
+            .onAppear {
+                viewModel.fetchLogs()
+            }
         }
-        
+    }
+    
+    // 리스트 뷰를 별도 속성으로 분리
+    private var logList: some View {
+        List {
+            ForEach(viewModel.logs) { log in
+                logListItem(for: log)
+            }
+        }
+        .listStyle(.plain)
+        .padding(EdgeInsets(top: 10, leading: 10, bottom: 20, trailing: 10))
+    }
+    
+    // 리스트 항목을 별도 메서드로 분리
+    private func logListItem(for log: LogMainData) -> some View {
+        ZStack(alignment: .leading) {
+            // LogListCell 호출 시 매개변수 이름 확인 (logMainData인지 log인지)
+            LogListCell(logMainData: log)
+                .padding(.vertical, 5)
+            
+            NavigationLink {
+                // 매개변수 이름을 modelContext로 변경
+                LogDetailView(log: log, modelContext: modelContext)
+            } label: {
+                EmptyView()
+            }
+            .opacity(0.0)
+        }
+        .listRowSeparator(.hidden)
+        .listRowBackground(Color.clear)
+        .swipeActions(edge: .trailing) {
+            Button(role: .destructive) {
+                viewModel.deleteLog(log: log)
+            } label: {
+                Label("삭제", systemImage: "trash")
+            }
+        }
+    }
+    
+    // 툴바 항목들을 별도 속성으로 분리
+    private var toolbarItems: some ToolbarContent {
+        Group {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button {
+                    isShowEditorView = true
+                } label: {
+                    Image(systemName: "plus")
+                }
+            }
+            
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button {
+                    isShowSampleCell = true
+                } label: {
+                    Image(systemName: "gearshape.fill")
+                }
+            }
+        }
     }
 }
 
 
 #Preview {
-    LogListView()
+    // SwiftData 미리보기 환경 설정
+    let config = ModelConfiguration(isStoredInMemoryOnly: true)
+    let container = try! ModelContainer(for: LogMainData.self, Category.self, ChildCategory.self, configurations: config)
+    
+    // 더미 ModelContext 생성
+    let context = container.mainContext
+    
+    // 미리보기용 카테고리 및 태그 생성
+    let previewCategory = Category(type: .programming)
+    let previewTag = ChildCategory(type: .swift)
+    previewTag.category = previewCategory
+    
+    // 미리보기용 로그 생성
+    let previewLog = LogMainData(
+        id: 1,
+        title: "SwiftUI 학습",
+        keep: "SwiftUI 기본 개념을 이해했다",
+        problem: "복잡한 레이아웃 구성이 어려웠다",
+        tryContent: "더 많은 예제를 통해 연습해보기",
+        creationDate: Date(),
+        category: previewCategory,
+        childCategory: previewTag
+    )
+    
+    context.insert(previewCategory)
+    context.insert(previewTag)
+    context.insert(previewLog)
+    
+    return LogListView(modelContext: context)
 }
-

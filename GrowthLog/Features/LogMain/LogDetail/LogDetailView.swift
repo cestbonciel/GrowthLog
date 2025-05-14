@@ -6,17 +6,21 @@
 //
 
 import SwiftUI
-
-// MARK: - 작성화면 디테일뷰(조회, 삭제, 수정)
+import SwiftData
 
 struct LogDetailView: View {
     @Environment(\.dismiss) var dismiss
     @State private var isShowEditorView = false
-    
-    let logMainData: LogItem
+    /// 더미에서 LogMainData로 수정
+    let log: LogMainData
+    @StateObject private var viewModel: LogListViewModel
     
     private let contentsLeading: CGFloat = 7
     
+    init(log: LogMainData, modelContext: ModelContext) {
+        self.log = log
+        _viewModel = StateObject(wrappedValue: LogListViewModel(modelContext: modelContext))
+    }
     
     var body: some View {
         ZStack {
@@ -28,7 +32,7 @@ struct LogDetailView: View {
                 
                 HStack {
                     VStack(alignment: .leading) {
-                        Text(logMainData.category.title)
+                        Text(log.category?.title ?? "카테고리 없음")
                             .font(.caption)
                             .foregroundStyle(.white)
                             .padding(.horizontal, 10)
@@ -37,21 +41,19 @@ struct LogDetailView: View {
                                 RoundedRectangle(cornerRadius: 7)
                                     .fill(.growthGreen)
                             )
-                        HStack(spacing: 0) {
-                            ForEach(logMainData.category.tags) {
-                                Text("#\($0.name)")
-                                    .font(.caption)
-                                    .padding(.horizontal, 5)
-                            }
+                        if let childCategory = log.childCategory {
+                            Text("#\(childCategory.name)")
+                                .font(.caption)
+                                .padding(.horizontal, 5)
                         }
                     }
                     
                     Spacer()
                     
                     VStack(alignment: .trailing, spacing: 0) {
-                        Text(logMainData.formattedDate)
+                        Text(log.formattedDate)
                         
-                        Text(logMainData.formattedtime)
+                        Text(log.formattedtime)
                     }
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -62,7 +64,7 @@ struct LogDetailView: View {
                     .frame(height: 1)
                     .padding(.horizontal, 20)
                 
-                Text(logMainData.title ?? logMainData.keep)
+                Text(log.title ?? log.keep)
                     .font(.title)
                     .padding()
                     .padding(.horizontal, 5)
@@ -74,7 +76,7 @@ struct LogDetailView: View {
                             .bold()
                             .padding(.vertical, 10)
                         
-                        Text(logMainData.keep)
+                        Text(log.keep)
                             .font(.footnote)
                             .padding(.leading, contentsLeading)
                         
@@ -85,7 +87,7 @@ struct LogDetailView: View {
                             .bold()
                             .padding(.vertical, 10)
                         
-                        Text(logMainData.problem)
+                        Text(log.problem)
                             .font(.footnote)
                             .padding(.leading, contentsLeading)
                         
@@ -96,16 +98,12 @@ struct LogDetailView: View {
                             .bold()
                             .padding(.vertical, 10)
                         
-                        Text(logMainData.tryContents)
+                        Text(log.tryContent)
                             .font(.footnote)
                             .bold()
                             .padding(.leading, contentsLeading)
                         
                         Spacer()
-                        
-//                        if let url = logDetail.URL {
-//
-//                        }
                     }
                     
                     Spacer()
@@ -128,13 +126,40 @@ struct LogDetailView: View {
             }
         }
         .navigationDestination(isPresented: $isShowEditorView) {
-            LogEditorView(logMainData: logMainData)
+            LogEditorView(viewModel: viewModel, editingLog: log)
         }
-        
     }
-    
 }
 
 #Preview {
-    LogDetailView(logMainData: LogItem(title: "SwiftUI 학습", category: LogListView.categorys[0], keep: "학습 개념 이해", problem: "응용", tryContents: "많이 사용해 보기", date: Date().addingTimeInterval(-1*24*3600)))
+    // SwiftData 미리보기 환경 설정
+    let config = ModelConfiguration(isStoredInMemoryOnly: true)
+    let container = try! ModelContainer(for: LogMainData.self, Category.self, ChildCategory.self, configurations: config)
+    
+    // 더미 ModelContext 생성
+    let context = container.mainContext
+    
+    // 미리보기용 카테고리 및 태그 생성
+    let previewCategory = Category(type: .programming)
+    let previewTag = ChildCategory(type: .swift)
+    previewTag.category = previewCategory
+    
+    // 미리보기용 로그 생성
+    let previewLog = LogMainData(
+        id: 1,
+        title: "SwiftUI 학습",
+        keep: "SwiftUI 기본 개념을 이해했다",
+        problem: "복잡한 레이아웃 구성이 어려웠다",
+        tryContent: "더 많은 예제를 통해 연습해보기",
+        creationDate: Date(),
+        category: previewCategory,
+        childCategory: previewTag
+    )
+    
+    context.insert(previewCategory)
+    context.insert(previewTag)
+    context.insert(previewLog)
+    
+    // viewModel이 아닌 context를 전달해야 함
+    return LogDetailView(log: previewLog, modelContext: context)
 }
