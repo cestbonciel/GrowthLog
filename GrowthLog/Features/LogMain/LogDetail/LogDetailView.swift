@@ -2,135 +2,142 @@
 //  LogDetailView.swift
 //  GrowthLog
 //
-//  Created by Seohyun Kim Kim on 5/12/25.
+//  Created by JuYong Lee on 5/12/25.
 //
 
 import SwiftUI
 
 // MARK: - 작성화면 디테일뷰(조회, 삭제, 수정)
-
 struct LogDetailView: View {
     @Environment(\.dismiss) var dismiss
+    
     @State private var isShowEditorView = false
     
-    let logMainData: LogItem
+    var logMainData: LogItem
     
     private let contentsLeading: CGFloat = 7
     
     
     var body: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 20)
-                .fill(.growthGreen.opacity(0.3))
-                .frame(maxWidth: .infinity)
-            
-            VStack(spacing: 0) {
+            if isShowEditorView {
+                LogEditorView(isShowEditorView: $isShowEditorView, logMainData: logMainData)
+            } else  {
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(.growthGreen.opacity(0.3))
+                    .frame(maxWidth: .infinity)
                 
-                HStack {
-                    VStack(alignment: .leading) {
-                        Text(logMainData.category.title)
-                            .font(.caption)
-                            .foregroundStyle(.white)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 5)
-                            .background(
-                                RoundedRectangle(cornerRadius: 7)
-                                    .fill(.growthGreen)
-                            )
-                        HStack(spacing: 0) {
-                            ForEach(logMainData.category.tags) {
-                                Text("#\($0.name)")
-                                    .font(.caption)
-                                    .padding(.horizontal, 5)
+                VStack(spacing: 0) {
+                    
+                    HStack {
+                        VStack(alignment: .leading) {
+                            Text(logMainData.category.title)
+                                .font(.callout)
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 5)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 7)
+                                        .fill(.growthGreen)
+                                )
+                            HStack(spacing: 0) {
+                                ForEach(logMainData.category.tags) {
+                                    Text("#\($0.name)")
+                                        .font(.footnote)
+                                        .padding(.horizontal, 5)
+                                }
                             }
                         }
-                    }
-                    
-                    Spacer()
-                    
-                    VStack(alignment: .trailing, spacing: 0) {
-                        Text(logMainData.formattedDate)
+                        .padding(.horizontal , 5)
                         
-                        Text(logMainData.formattedtime)
+                        Spacer()
+                        
+                        VStack(alignment: .trailing, spacing: 0) {
+                            Text(logMainData.formattedDate)
+                            
+                            Text(logMainData.formattedtime)
+                        }
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .padding(.trailing, 10)
                     }
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                }
-                .padding()
-                
-                Rectangle()
-                    .frame(height: 1)
-                    .padding(.horizontal, 20)
-                
-                Text(logMainData.title ?? logMainData.keep)
-                    .font(.title)
                     .padding()
-                    .padding(.horizontal, 5)
-                
-                HStack {
-                    VStack(alignment: .leading, spacing: 0) {
-                        Text("Keep")
-                            .font(.subheadline)
-                            .bold()
-                            .padding(.vertical, 10)
-                        
-                        Text(logMainData.keep)
-                            .font(.footnote)
-                            .padding(.leading, contentsLeading)
-                        
-                        Spacer()
-                        
-                        Text("Problem")
-                            .font(.subheadline)
-                            .bold()
-                            .padding(.vertical, 10)
-                        
-                        Text(logMainData.problem)
-                            .font(.footnote)
-                            .padding(.leading, contentsLeading)
-                        
-                        Spacer()
-                        
-                        Text("Try")
-                            .font(.subheadline)
-                            .bold()
-                            .padding(.vertical, 10)
-                        
-                        Text(logMainData.tryContents)
-                            .font(.footnote)
-                            .bold()
-                            .padding(.leading, contentsLeading)
-                        
-                        Spacer()
-                        
-//                        if let url = logDetail.URL {
-//
-//                        }
-                    }
                     
-                    Spacer()
+                    Rectangle()
+                        .frame(height: 1)
+                        .padding(.horizontal, 25)
+                    
+                    Text(logMainData.title ?? "KTP 회고")
+                        .font(.title)
+                        .padding(.top)
+                        .padding(.horizontal, 5)
+                    
+                    HStack {
+                        VStack(alignment: .leading, spacing: 0) {
+                            Text("Keep")
+                                .font(.subheadline)
+                                .bold()
+                                .padding(.vertical, 10)
+                            
+                            Text(logMainData.keep)
+                                .font(.footnote)
+                                .padding(.leading, contentsLeading)
+                            
+                            Spacer()
+                            
+                            Text("Problem")
+                                .font(.subheadline)
+                                .bold()
+                                .padding(.vertical, 10)
+                            
+                            Text(logMainData.problem)
+                                .font(.footnote)
+                                .padding(.leading, contentsLeading)
+                            
+                            Spacer()
+                            
+                            Text("Try")
+                                .font(.subheadline)
+                                .bold()
+                                .padding(.vertical, 10)
+                            
+                            Text(logMainData.tryContents)
+                                .font(.footnote)
+                                .bold()
+                                .padding(.leading, contentsLeading)
+                            
+                            Spacer()
+                            Spacer()
+                        }
+                        Spacer()
+                        
+                    }
+                    .padding(.horizontal, 30)
+                    
                 }
-                .padding()
                 
-            }
-            
-        }
-        .padding(EdgeInsets(top: 30, leading: 20, bottom: 30, trailing: 20))
-        .navigationTitle("회고 상세")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem {
                 Button {
                     isShowEditorView = true
+                    
                 } label: {
-                    Image(systemName: "square.and.pencil")
+                    RoundedRectangle(cornerRadius: 7)
+                        .frame(width: 45, height: 45)
+                        .foregroundColor(Color.growthGreen)
+                        .overlay {
+                            Image(systemName: "square.and.pencil")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(height: 30)
+                                .foregroundStyle(.white)
+                                .offset(x: 2, y: -1)
+                        }
                 }
+                .offset(x: 130, y: 270)
             }
         }
-        .navigationDestination(isPresented: $isShowEditorView) {
-            LogEditorView(logMainData: logMainData)
-        }
-        
+        .padding(EdgeInsets(top: 20, leading: 20, bottom: 30, trailing: 20))
+        .navigationTitle("회고 상세")
+        .navigationBarTitleDisplayMode(.inline)
     }
     
 }

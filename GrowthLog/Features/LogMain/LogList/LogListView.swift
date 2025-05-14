@@ -2,7 +2,7 @@
 //  LogListView.swift
 //  GrowthLog
 //
-//  Created by Seohyun Kim Kim on 5/12/25.
+//  Created by JuYong Lee on 5/12/25.
 //
 
 import SwiftUI
@@ -36,6 +36,7 @@ struct LogItem: Identifiable, Hashable {
 
 struct LogListView: View {
     @State private var isShowSampleCell = false
+    @State var isShowEditorView = false
     
     static let categorys: [Category] = [
         Category(type: .tech, tags: [ChildCategory(type: .computerScience), ChildCategory(type: .network), ChildCategory(type: .security)]),
@@ -59,29 +60,55 @@ struct LogListView: View {
                 if items.isEmpty {
                     Text("아직 작성한 회고가 없습니다.")
                 } else {
-                    List {
-                        ForEach(items) { item in
-                            ZStack(alignment: .leading) {
-                                LogListCell(item: item)
-                                    .padding(.vertical, 5)
-                                NavigationLink {
-                                    LogDetailView(logMainData: item)
-                                } label: {
-                                    EmptyView()
+                    ZStack {
+                        List {
+                            ForEach(items) { item in
+                                ZStack(alignment: .leading) {
+                                    LogListCell(item: item)
+                                        .padding(.vertical, 5)
+                                    NavigationLink {
+                                        LogDetailView(logMainData: item)
+                                    } label: {
+                                        EmptyView()
+                                    }
+                                    .opacity(0.0)
                                 }
-                                .opacity(0.0)
+                                .listRowSeparator(.hidden)
+                                .listRowBackground(Color.clear)
                             }
-                            .listRowSeparator(.hidden)
-                            .listRowBackground(Color.clear)
                         }
+                        .listStyle(.plain)
+                        .padding(EdgeInsets(top: 10, leading: 10, bottom: 20, trailing: 10))
+                        
+                        VStack {
+                            Spacer()
+                            
+                            HStack {
+                                Spacer()
+                                
+                                NavigationLink(destination: LogEditorView(isShowEditorView: $isShowEditorView, logMainData: nil)) {
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .frame(width: 45, height: 45)
+                                        .foregroundColor(Color.growthGreen)
+                                        .overlay {
+                                            Image(systemName: "square.and.pencil")
+                                                .resizable()
+                                                .scaledToFit()
+                                                .frame(height: 30)
+                                                .foregroundStyle(.white)
+                                                .offset(x: 2, y: -1)
+                                        }
+                                }
+                            }
+                            .padding()
+                        }
+                        .padding()
+                        
                     }
-                    .listStyle(.plain)
-                    .padding(EdgeInsets(top: 10, leading: 10, bottom: 20, trailing: 10))
-                    
                 }
-                
             }
-            .navigationTitle("회고")
+            .navigationTitle("GrowthLog")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem {
                     Button {
@@ -92,13 +119,11 @@ struct LogListView: View {
                 }
             }
             .navigationDestination(isPresented: $isShowSampleCell) {
-                SampleCell()
+                //LogSettingView()
             }
         }
-        
     }
 }
-
 
 #Preview {
     LogListView()
