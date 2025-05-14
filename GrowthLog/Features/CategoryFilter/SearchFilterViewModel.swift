@@ -9,7 +9,6 @@ import Foundation
 import SwiftUI
 import SwiftData
 
-@Observable
-class SearchFilterViewModel {
 
+final class SearchFilterViewModel {
 }

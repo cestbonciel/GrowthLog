@@ -31,5 +31,6 @@ struct LogMainView: View {
 
 #Preview {
     LogMainView()
-        .modelContainer(for: [LogMainData.self], inMemory: true)
+        .modelContainer(for: [LogMainData.self/*, Category.self, ChildCategory.self*/], inMemory: true)
+
 }
