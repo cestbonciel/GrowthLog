@@ -10,6 +10,7 @@ import SwiftData
 import Charts
 
 /// 주, 월 통계 뷰 모델
+/// TODO: @EnvironmentObject -> 데이터 공유, 생성자 공유, published 생성자로..
 final class StatisticsViewModel: ObservableObject {
     // 표시할 통계 데이터
     @Published var weeklyStats: [LogStats] = []
