@@ -15,16 +15,14 @@ struct SearchFilterView: View {
     @State private var searchText = ""
     @State private var selectedTags: [ChildCategory] = []
 
-
-
   //카테ㅐ고리 탭 필터링 계산속성
-    var filteredLogs: [LogItem] {
-        guard !selectedTags.isEmpty else { return viewModel.items }
-
-            return viewModel.items.filter { log in
-                !Set(log.category.tags.map(\.id)).isDisjoint(with: selectedTags.map(\.id))
-            }
-        }
+//    var filteredLogs: [LogItem] {
+//        guard !selectedTags.isEmpty else { return viewModel.items }
+//
+//            return viewModel.items.filter { log in
+//                !Set(log.category.tags.map(\.id)).isDisjoint(with: selectedTags.map(\.id))
+//            }
+//        }
 
 
     var body: some View {
