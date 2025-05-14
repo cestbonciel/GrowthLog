@@ -9,23 +9,115 @@ import Foundation
 import SwiftUI
 import SwiftData
 
-@Observable
-class SearchFilterViewModel {
-    let items: [LogItem] = [
-        .init(title: "SwiftUI 학습",       category: LogListView.categorys[0], keep: "학습 개념 이해", problem: "응용", tryContents: "많이 사용해 보기", date: Date().addingTimeInterval(-1*24*3600)),
-        .init(title: nil,                 category: LogListView.categorys[2], keep: "학습 개념 이해", problem: "응용", tryContents: "많이 사용해 보기", date: Date().addingTimeInterval(-1*24*3600)),
-        .init(title: "CoreData CRUD 구현", category: LogListView.categorys[1], keep: "학습 개념 이해", problem: "응용", tryContents: "많이 사용해 보기", date: Date().addingTimeInterval(-2*24*3600)),
-        .init(title: "MVVM 구조 적용",      category: LogListView.categorys[3], keep: "학습 개념 이해", problem: "응용", tryContents: "많이 사용해 보기", date: Date().addingTimeInterval(-3*24*3600)),
-        .init(title: "UI 리팩토링",         category: LogListView.categorys[4], keep: "학습 개념 이해", problem: "응용", tryContents: "많이 사용해 보기", date: Date().addingTimeInterval(-4*24*3600))
-    ]
 
-    func filteredResults(for keyword: String) -> [LogItem] {
+final class SearchFilterViewModel: ObservableObject {
+    private let modelContext: ModelContext
+    var logs: [LogMainData] = []
+    
+
+    init(modelContext: ModelContext) {
+        self.modelContext = modelContext
+        fetchLogs()
+    }
+    
+    func fetchLogs() {
+        do {
+            let descriptor = FetchDescriptor<LogMainData>(sortBy: [SortDescriptor(\.creationDate, order: .reverse)])
+            logs = try modelContext.fetch(descriptor)
+        } catch {
+            print("Failed to fetch logs: \(error.localizedDescription)")
+        }
+    }
+    
+    
+    func filteredResults(for keyword: String) -> [LogMainData] {
         guard !keyword.isEmpty else { return [] }
-        return items.filter {
+        
+        return logs.filter {
             $0.title?.localizedCaseInsensitiveContains(keyword) == true ||
             $0.keep.localizedCaseInsensitiveContains(keyword) ||
             $0.problem.localizedCaseInsensitiveContains(keyword) ||
-            $0.tryContents.localizedCaseInsensitiveContains(keyword)
+            $0.tryContent.localizedCaseInsensitiveContains(keyword) ||
+            $0.category?.title.localizedCaseInsensitiveContains(keyword) == true ||
+            $0.childCategory?.name.localizedCaseInsensitiveContains(keyword) == true
         }
+    }
+    
+   
+    func filterByCategory(categoryId: Int?) -> [LogMainData] {
+        guard let categoryId = categoryId else { return logs }
+        
+        return logs.filter {
+            $0.category?.id == categoryId
+        }
+    }
+    
+    
+    func filterByChildCategory(childCategoryType: ChildCategoryType?) -> [LogMainData] {
+        guard let childCategoryType = childCategoryType else { return logs }
+        
+        return logs.filter {
+            $0.childCategory?.type == childCategoryType
+        }
+    }
+    
+    
+    func filterByDateRange(from: Date?, to: Date?) -> [LogMainData] {
+        var filteredLogs = logs
+        
+        if let fromDate = from {
+            filteredLogs = filteredLogs.filter { $0.creationDate >= fromDate }
+        }
+        
+        if let toDate = to {
+            
+            let nextDay = Calendar.current.date(byAdding: .day, value: 1, to: toDate)!
+            filteredLogs = filteredLogs.filter { $0.creationDate < nextDay }
+        }
+        
+        return filteredLogs
+    }
+    
+    
+    func applyFilters(keyword: String? = nil,
+                      categoryId: Int? = nil,
+                      childCategoryType: ChildCategoryType? = nil,
+                      fromDate: Date? = nil,
+                      toDate: Date? = nil) -> [LogMainData] {
+        var result = logs
+        
+        
+        if let keyword = keyword, !keyword.isEmpty {
+            result = result.filter {
+                $0.title?.localizedCaseInsensitiveContains(keyword) == true ||
+                $0.keep.localizedCaseInsensitiveContains(keyword) ||
+                $0.problem.localizedCaseInsensitiveContains(keyword) ||
+                $0.tryContent.localizedCaseInsensitiveContains(keyword) ||
+                $0.category?.title.localizedCaseInsensitiveContains(keyword) == true ||
+                $0.childCategory?.name.localizedCaseInsensitiveContains(keyword) == true
+            }
+        }
+        
+        // 카테고리 필터링
+        if let categoryId = categoryId {
+            result = result.filter { $0.category?.id == categoryId }
+        }
+        
+        // 태그 필터링
+        if let childCategoryType = childCategoryType {
+            result = result.filter { $0.childCategory?.type == childCategoryType }
+        }
+        
+        // 날짜 필터링
+        if let fromDate = fromDate {
+            result = result.filter { $0.creationDate >= fromDate }
+        }
+        
+        if let toDate = toDate {
+            let nextDay = Calendar.current.date(byAdding: .day, value: 1, to: toDate)!
+            result = result.filter { $0.creationDate < nextDay }
+        }
+        
+        return result
     }
 }
