@@ -9,8 +9,8 @@ import SwiftUI
 import SwiftData
 
 struct CategoryFilterView: View {
+    @AppStorage("hasSeenOnboarding") var hasSeenOnboarding: Bool = false
     @Binding var selectedTags: [ChildCategoryType]
-
 
     @Environment(\.dismiss) private var dismiss
     @State private var viewModel = CategoryFilterViewModel()
@@ -19,6 +19,16 @@ struct CategoryFilterView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 10) {
+
+
+                //온보딩 뷰 등장 잠깐 여기에 넣어둠,
+#if DEBUG
+                Button("온보딩 리셋") {
+                    hasSeenOnboarding = false
+                }
+#endif
+
+
                 if !viewModel.selectedTags.isEmpty {
                     SelectedTagsHeaderView(
                         tags: viewModel.selectedTags,
