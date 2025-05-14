@@ -15,34 +15,38 @@ struct StatisticsView: View {
     @State private var selectedStatTab: StatTabType = .tags
     
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                // 상단 헤더와 기본 통계
-                headerSection
-                
-                // 주/월 선택 세그먼트
-                periodSegmentPicker
-                
-                // 회고 건수 차트
-                logCountChartSection
-                
-                // 키워드/태그 선택 세그먼트
-                statTypeSegmentPicker
-                
-                // 키워드/태그 분포 차트
-                keywordTagDistributionSection
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    // 상단 헤더와 기본 통계
+                    headerSection
+                    
+                    // 주/월 선택 세그먼트
+                    periodSegmentPicker
+                    
+                    // 회고 건수 차트
+                    logCountChartSection
+                    
+                    // 키워드/태그 선택 세그먼트
+                    statTypeSegmentPicker
+                    
+                    // 키워드/태그 분포 차트
+                    keywordTagDistributionSection
+                }
+                .padding()
             }
-            .padding()
+            .navigationTitle("회고 통계")
+            .navigationBarTitleDisplayMode(.inline)
+            .background(Color(UIColor.systemGray6))
         }
-        .navigationTitle("통계")
-        .background(Color(UIColor.systemGray6))
+        
     }
     
     // 상단 헤더 및 기본 통계
     private var headerSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("회고 통계")
-                .font(.title2).bold()
+//            Text("회고 통계")
+//                .font(.title2).bold()
             
             HStack(spacing: 24) {
                 VStack(alignment: .leading) {
