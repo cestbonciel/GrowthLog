@@ -129,21 +129,21 @@ struct LogDetailView: View {
                 } label: {
                     Circle()
                         .frame(width: 50, height: 50)
-                        .foregroundColor(.gray.opacity(0.7))
+                        .foregroundColor(.gray.opacity(0.8))
                         .overlay {
                             Image(systemName: "square.and.pencil")
                                 .resizable()
                                 .scaledToFit()
-                                .frame(height: 30)
+                                .frame(height: 25)
                                 .foregroundStyle(.white)
-                                .offset(x: 3, y: -2)
+                                .offset(x: 2, y: -2)
                         }
                 }
-                .offset(x: 125, y: 265)
+                .offset(x: 125, y: 275)
             }
         }
         .padding(EdgeInsets(top: 20, leading: 30, bottom: 30, trailing: 30))
-        .navigationTitle("상세")
+        .navigationTitle("회고 상세")
     }
 }
 
@@ -155,12 +155,12 @@ struct LogDetailView: View {
 //    // 더미 ModelContext 생성
 //    let context = container.mainContext
 //    
-//    // 미리보기용 카테고리 및 태그 생성
+    // 미리보기용 카테고리 및 태그 생성
     let previewCategory = Category(type: .programming)
     let previewTag = ChildCategory(type: .swift)
 //    previewTag.category = previewCategory
     
-//    // 미리보기용 로그 생성
+    // 미리보기용 로그 생성
     let previewLog = LogMainData(
         id: 1,
         title: "SwiftUI 학습",
@@ -171,7 +171,7 @@ struct LogDetailView: View {
         category: previewCategory,
         childCategory: previewTag
     )
-//    
+    
 //    context.insert(previewCategory)
 //    context.insert(previewTag)
 //    context.insert(previewLog)

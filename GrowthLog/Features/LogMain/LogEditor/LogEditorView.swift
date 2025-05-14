@@ -11,6 +11,7 @@ import SwiftData
 
 struct LogEditorView: View {
     @Environment(\.dismiss) var dismiss
+    @Environment(\.colorScheme) var colorScheme
     
     @State private var title: String = ""
     @State private var keep: String = ""
@@ -29,7 +30,8 @@ struct LogEditorView: View {
     var logMainData: LogMainData? = nil
     
     private let contentsLeading: CGFloat = 7
-    
+    private let contentsHeight: CGFloat = 100
+
     private var stackToPadding: CGFloat {
         logMainData == nil ? 20 : 0
     }
@@ -95,19 +97,35 @@ struct LogEditorView: View {
                             .bold()
                             .padding(.vertical, 9)
                         
-//                        TextField("", text: .constant(logMainData?.keep ?? ""), prompt: Text("현재 만족하고 있는 부분"))
                         TextEditor(text: $keep)
-                            .frame(height: 120)
-                            .foregroundStyle(.black.opacity(5))
-                            .background(Color.gray.opacity(0.01))
-                            .cornerRadius(8)
                             .font(.footnote)
+                            .frame(height: contentsHeight)
+                            .cornerRadius(8)
                             .padding(.leading, contentsLeading)
                             .onAppear {
                                 if let oldKeep = logMainData?.keep {
                                     keep = oldKeep
                                 }
                             }
+                            .scrollContentBackground(.hidden)
+                            .background(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(.white.opacity(0.4))
+                            )
+                            .overlay(alignment: .topLeading) {
+                                Text("현재 만족하고 있는 부분")
+                                    .font(.footnote)
+                                    .foregroundStyle(keep.isEmpty ? (colorScheme == .dark ? .black : .gray) : .clear)
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 10)
+                            }
+//                            .onChange(of: keep) { newValue in
+//                                if newValue.count > 10 {
+//                                    keep = String(newValue.prefix(10))
+//                                }
+//                            }
+                    
+                        
                         
                         Spacer()
                         
@@ -116,10 +134,29 @@ struct LogEditorView: View {
                             .bold()
                             .padding(.vertical, 9)
                         
-                        TextField("", text: .constant(logMainData?.problem ?? ""), prompt: Text("개선이 필요하다고 생각되는 부분"))
+                        TextEditor(text: $problem)
                             .font(.footnote)
+                            .frame(height: contentsHeight)
+                            .cornerRadius(8)
                             .padding(.leading, contentsLeading)
-                        
+                            .onAppear {
+                                if let oldProblem = logMainData?.problem {
+                                    problem = oldProblem
+                                }
+                            }
+                            .scrollContentBackground(.hidden)
+                            .background(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(.white.opacity(0.4))
+                            )
+                            .overlay(alignment: .topLeading) {
+                                Text("개선이 필요하다고 생각되는 부분")
+                                    .font(.footnote)
+                                    .foregroundStyle(problem.isEmpty ? (colorScheme == .dark ? .black : .gray) : .clear)
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 10)
+                            }
+
                         Spacer()
                         
                         Text("Try")
@@ -127,10 +164,28 @@ struct LogEditorView: View {
                             .bold()
                             .padding(.vertical, 9)
                         
-                        TextField("", text: .constant(""), prompt: Text("개선이 필요하다고 생각되는 부분"))
+                        TextEditor(text: $tryContent)
                             .font(.footnote)
-                            .bold()
+                            .frame(height: contentsHeight)
+                            .cornerRadius(8)
                             .padding(.leading, contentsLeading)
+                            .onAppear {
+                                if let oldTryContent = logMainData?.tryContent {
+                                    tryContent = oldTryContent
+                                }
+                            }
+                            .scrollContentBackground(.hidden)
+                            .background(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(.white.opacity(0.4))
+                            )
+                            .overlay(alignment: .topLeading) {
+                                Text("Problem에 대한 해결책")
+                                    .font(.footnote)
+                                    .foregroundStyle(tryContent.isEmpty ? (colorScheme == .dark ? .black : .gray) : .clear)
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 10)
+                            }
                         
                         Spacer()
                         Spacer()
@@ -146,7 +201,7 @@ struct LogEditorView: View {
         .padding(
             EdgeInsets(top: stackToPadding, leading: stackHorizontalPadding, bottom: stackBottomPadding, trailing: stackHorizontalPadding)
         )
-        .navigationTitle(logMainData == nil ? "등록" : "수정")
+        .navigationTitle(logMainData == nil ? "회고 등록" : "수정")
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden()
         .toolbar {
@@ -161,6 +216,8 @@ struct LogEditorView: View {
                     Image(systemName: "chevron.backward")
                         .bold()
                         .padding(.leading, -8)
+                    
+//                    Text(logMainData == nil ? "회고 목록" : "회고 상세")
                 }
             }
             
@@ -192,6 +249,14 @@ struct LogEditorView: View {
                 .presentationDragIndicator(.hidden)
         }
         
+    }
+    
+    
+
+}
+
+
+
 //=======
 //    @State private var title: String = ""
 //    @State private var keep: String = ""
@@ -367,8 +432,7 @@ struct LogEditorView: View {
 //            }
 //        }
 //>>>>>>> feat/LogMainModel
-    }
-}
+
 
 
 struct CategoryModal:  View {
