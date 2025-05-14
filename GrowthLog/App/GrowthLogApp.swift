@@ -10,6 +10,8 @@ import SwiftData
 
 @main
 struct GrowthLogApp: App {
+    // 온보딩 실행
+    @AppStorage("hasSeenOnboarding") var hasSeenOnboarding: Bool = false
     // SwiftData 컨테이너에 Category, Tag 를 등록 (아직 모델이 준비되지 않음)
     init() {
         // 1) 새로운 Appearance 객체 생성
@@ -22,12 +24,23 @@ struct GrowthLogApp: App {
         if #available(iOS 15.0, *) {
             UITabBar.appearance().scrollEdgeAppearance = appearance
         }
+
+        // 온보딩 페이지 인디케이터 색상 설정
+        UIPageControl.appearance().currentPageIndicatorTintColor = UIColor.green
+        UIPageControl.appearance().pageIndicatorTintColor = UIColor.lightGray
     }
     
     /// 임시로 설정한 뷰입니다. MainView로 넣어야 합니다.
     var body: some Scene {
         WindowGroup {
-            LogMainView()
+
+            // 첫 실행일때 온보딩 뷰 실행
+            if hasSeenOnboarding {
+                LogMainView()
+            } else {
+                OnboardingView()
+            }
+
             //WeeklyStatsView()
             //CategoryFilterView(name: "magnifyingglass", color: .black)
         }
