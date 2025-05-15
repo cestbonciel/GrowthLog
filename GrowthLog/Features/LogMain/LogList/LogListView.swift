@@ -105,6 +105,14 @@ struct LogListView: View {
     }
 }
 
+extension LogListView {
+    func delete(_ indexSet: IndexSet) {
+        for index in indexSet {
+            context.delete(logMainData[index])
+        }
+    }
+}
+
 #Preview {
     //SwiftData 미리보기 환경 설정
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
