@@ -32,7 +32,7 @@ struct LogDetailView: View {
                     
                     HStack {
                         VStack(alignment: .leading) {
-                            Text(logMainData.category?.title ?? "")
+                            Text(logMainData.childCategory?.category?.title ?? "")
                                 .font(.callout)
                                 .foregroundStyle(.white)
                                 .padding(.horizontal, 10)
@@ -43,11 +43,9 @@ struct LogDetailView: View {
                                 )
                             
                             HStack(spacing: 0) {
-                                ForEach(logMainData.childCategories) { tag in
-                                    Text("#\(tag.name)")
+                                Text("#\(logMainData.childCategory?.name ?? "")")
                                         .font(.caption)
                                         .padding(.horizontal, 2)
-                                }
                             }
                             .padding(.horizontal, 5)
                         }
@@ -118,23 +116,33 @@ struct LogDetailView: View {
                     
                 }
                 
-                Button {
-                    isShowEditorView = true
+                VStack {
+                    Spacer()
                     
-                } label: {
-                    Circle()
-                        .frame(width: 50, height: 50)
-                        .foregroundColor(.gray.opacity(0.8))
-                        .overlay {
-                            Image(systemName: "square.and.pencil")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(height: 25)
-                                .foregroundStyle(.white)
-                                .offset(x: 2, y: -2)
+                    HStack {
+                        Spacer()
+                        Button {
+                            isShowEditorView = true
+                            
+                        } label: {
+                            Circle()
+                                .frame(width: 50, height: 50)
+                                .foregroundColor(.gray.opacity(0.8))
+                                .overlay {
+                                    Image(systemName: "square.and.pencil")
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(height: 25)
+                                        .foregroundStyle(.white)
+                                        .offset(x: 2, y: -2)
+                                }
                         }
+                    }
+                    
                 }
-                .offset(x: 125, y: 275)
+                .padding(10)
+                .padding(.horizontal)
+//                .offset(x: 125, y: 275)
             }
         }
         .padding(EdgeInsets(top: 20, leading: 20, bottom: 30, trailing: 20))

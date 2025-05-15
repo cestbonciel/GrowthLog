@@ -20,7 +20,7 @@ struct LogListCell: View {
             VStack(spacing: 0) {
                 HStack {
                     VStack(alignment: .leading) {
-                        Text(logMainData.category?.title ?? "카테고리 없음")
+                        Text(logMainData.childCategory?.category?.title ?? "카테고리 없음")
                             .font(.caption)
                             .foregroundStyle(.white)
                             .padding(.horizontal, 10)
@@ -29,11 +29,10 @@ struct LogListCell: View {
                                 RoundedRectangle(cornerRadius: 7)
                                     .fill(.growthGreen)
                             )
-                        ForEach(logMainData.childCategories) { tag in
-                            Text("#\(tag.name)")
-                                .font(.caption)
-                                .padding(.horizontal, 5)
-                        }
+                        
+                        Text("#\(logMainData.childCategory?.name ?? "")")
+                            .font(.caption)
+                            .padding(.horizontal, 5)
                         
                     }
                     
