@@ -76,10 +76,10 @@ private struct SelectedTagsHeaderView: View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack {
                 ForEach(tags, id: \.self) { tag in
-                    Text(tag.name)
+                    Text("#\(tag.name)")
                         .padding(.vertical, 6)
                         .padding(.horizontal, 12)
-                        //.bold()
+                    //.bold()
                         .background(Color.green)
                         .foregroundColor(tag.isSelected ? .black : .primary)
                         .clipShape(RoundedRectangle(cornerRadius: 10))
@@ -132,14 +132,29 @@ private struct CategorySectionView: View {
                                 showLimitAlert = true
                             }
                         } label: {
-                            Text(tag.name)
-                                .padding(.vertical, 8)
-                                .padding(.horizontal, 16)
-                                .frame(height: 40)
-                                .font(.footnote)
-                                .background(tag.isSelected ? Color.green : Color.gray.opacity(0.2))
-                                .foregroundColor(tag.isSelected ? .black : .primary)
-                                .clipShape(RoundedRectangle(cornerRadius: 12))
+                            // 아이패드
+                            if UIDevice.current.userInterfaceIdiom == .pad {
+                                Text(tag.name)
+                                    .padding(.vertical, 12)
+                                    .padding(.horizontal, 24)
+                                    .frame(height: 80)
+                                    .font(.body)
+                                    .background(tag.isSelected ? Color.green : Color.gray.opacity(0.2))
+                                    .foregroundColor(tag.isSelected ? .black : .primary)
+                                    .clipShape(RoundedRectangle(cornerRadius: 12))
+
+                            } else {
+                                // 아이폰
+                                Text(tag.name)
+                                    .padding(.vertical, 8)
+                                    .padding(.horizontal, 16)
+                                    .frame(height: 40)
+                                    .font(.footnote)
+                                    .background(tag.isSelected ? Color.green : Color.gray.opacity(0.2))
+                                    .foregroundColor(tag.isSelected ? .black : .primary)
+                                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                            }
+
                         }
                     }
                 }
@@ -177,6 +192,6 @@ struct StatefulPreviewWrapper<Value, Content: View>: View {
 
 #Preview {
     StatefulPreviewWrapper([ChildCategoryType.swift]) { binding in
-    	CategoryFilterView(viewModel: CategoryFilterViewModel(), selectedTags: binding)
+        CategoryFilterView(viewModel: CategoryFilterViewModel(), selectedTags: binding)
     }
 }

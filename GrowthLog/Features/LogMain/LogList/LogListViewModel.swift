@@ -25,7 +25,7 @@ final class LogListViewModel: ObservableObject {
         loadCategoriesIfNeeded()
         loadJsonData()
     }
-    
+
     private func initializeCategoriesAndWait() {
         // 기존 loadCategoriesIfNeeded 메서드를 향상시킴
         do {

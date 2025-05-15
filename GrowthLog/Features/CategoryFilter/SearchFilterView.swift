@@ -23,7 +23,6 @@ struct SearchFilterView: View {
     @State private var isShowingFilter = false
 
 
-
     // 태그 필터 + 텍스트 필터 조합 계산 프로퍼티
     private var filteredLogs: [LogMainData] {
         // 태그 필터
@@ -54,18 +53,20 @@ struct SearchFilterView: View {
                     // 검색어도 없고 태그도 없고
                     if searchText.isEmpty && selectedTags.isEmpty {
                         VStack(spacing: 8) {
-                            Text("검색어를 입력하거나 필터를 설정해주세요")
+                            Text("검색어를 입력하거나,\n필터를 설정해주세요")
                                 .foregroundColor(.gray)
+                                .lineSpacing(5)
                                 .font(.title3)
+                            Spacer()
                             Image(systemName: "text.page.badge.magnifyingglass")
                                 .resizable()
                                 .scaledToFit()
-                                .frame(width: 32, height: 32)
+                                .frame(width: 150, height: 150)
                                 .foregroundColor(.gray)
                         }
                         .padding(.top, 100)
                     }
-                    // 칭 결과 무
+                    // 매칭 결과 무
                     else if filteredLogs.isEmpty {
                         Text("검색 결과가 없습니다")
                             .foregroundColor(.gray)
@@ -75,30 +76,59 @@ struct SearchFilterView: View {
                     // 매칭 결과 유
                     else {
                         VStack(spacing: 12) {
-
                             HStack {
-                                Image(systemName: "line.3.horizontal.decrease")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 20, height: 20)
-                                    .foregroundColor(Color.green.opacity(0.2))
-
                                 // 만약 카테고리 필터가 적용될 경우 태그 띄우기
                                 if !selectedTags.isEmpty {
-                                    ScrollView(.horizontal, showsIndicators: false) {
-                                        HStack(spacing: 8) {
-                                            ForEach(selectedTags, id: \.self) { type in
-                                                Text(type.rawValue)
-                                                    .font(.caption2)
-                                                    .padding(.vertical, 4)
-                                                    .padding(.horizontal, 8)
-                                                    .background(Color.green.opacity(0.2))
-                                                    .foregroundColor(.green)
-                                                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                                    //아이패드
+                                    if UIDevice.current.userInterfaceIdiom == .pad {
+                                        Image(systemName: "line.3.horizontal.decrease")
+                                            .resizable()
+                                            .scaledToFit()
+                                            .frame(width: 40, height: 40)
+                                            .foregroundColor(Color.green.opacity(0.6))
+
+                                        ScrollView(.horizontal, showsIndicators: false) {
+                                            HStack(spacing: 8) {
+                                                ForEach(selectedTags, id: \.self) { type in
+                                                    Text("#\(type.rawValue)")
+                                                        .font(.body)
+                                                        .padding(.vertical, 8)
+                                                        .padding(.horizontal, 16)
+                                                        .background(Color.green)
+                                                        .foregroundColor(Color.black)
+                                                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                                                }
                                             }
+                                            .padding(.horizontal, 5)
                                         }
-                                        .padding(.horizontal, 5)
+
+                                    } else { 
+                                        // 아이폰
+                                        Image(systemName: "line.3.horizontal.decrease")
+                                            .resizable()
+                                            .scaledToFit()
+                                            .frame(width: 20, height: 20)
+                                            .foregroundColor(Color.green.opacity(0.6))
+
+                                        ScrollView(.horizontal, showsIndicators: false) {
+                                            HStack(spacing: 8) {
+                                                ForEach(selectedTags, id: \.self) { type in
+                                                    Text("#\(type.rawValue)")
+                                                        .font(.caption2)
+                                                        .padding(.vertical, 4)
+                                                        .padding(.horizontal, 8)
+                                                        .background(Color.green)
+                                                        .foregroundColor(Color.black)
+                                                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                                                }
+                                            }
+                                            .padding(.horizontal, 5)
+                                        }
+
                                     }
+
+                                    
+
                                 }
 
                                 Spacer()
@@ -111,7 +141,7 @@ struct SearchFilterView: View {
 
                             // 총 개수 표시
                             HStack {
-                                Text("총 \(filteredLogs.count)개 결과")
+                                Text("총 \(filteredLogs.count)개 검색됨")
                                     .font(.subheadline)
                                     .foregroundColor(.secondary)
                                 Spacer()
