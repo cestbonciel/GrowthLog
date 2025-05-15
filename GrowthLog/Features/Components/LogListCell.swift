@@ -29,11 +29,12 @@ struct LogListCell: View {
                                 RoundedRectangle(cornerRadius: 7)
                                     .fill(.growthGreen)
                             )
-                        if let childCategory = logMainData.childCategory {
-                            Text("#\(childCategory.name)")
+                        ForEach(logMainData.childCategories) { tag in
+                            Text("#\(tag.name)")
                                 .font(.caption)
                                 .padding(.horizontal, 5)
                         }
+                        
                     }
                     
                     Spacer()
@@ -66,30 +67,30 @@ struct LogListCell: View {
     }
 }
 
-#Preview {
-    // SwiftData 미리보기 환경 설정
-    let config = ModelConfiguration(isStoredInMemoryOnly: true)
-    let container = try! ModelContainer(for: LogMainData.self, Category.self, ChildCategory.self, configurations: config)
-    
-    // 더미 ModelContext 생성
-    let context = container.mainContext
-    
-    // 미리보기용 카테고리 및 태그 생성
-    let previewCategory = Category(type: .programming)
-    let previewTag = ChildCategory(type: .swift)
-    previewTag.category = previewCategory
-    
-    // 미리보기용 로그 생성
-    let previewLog = LogMainData(
-        id: 1,
-        title: "SwiftUI 학습",
-        keep: "SwiftUI 기본 개념을 이해했다",
-        problem: "복잡한 레이아웃 구성이 어려웠다",
-        tryContent: "더 많은 예제를 통해 연습해보기",
-        creationDate: Date(),
-        category: previewCategory,
-        childCategory: previewTag
-    )
-    
-    return LogListCell(logMainData: previewLog)
-}
+//#Preview {
+//    // SwiftData 미리보기 환경 설정
+//    let config = ModelConfiguration(isStoredInMemoryOnly: true)
+//    let container = try! ModelContainer(for: LogMainData.self,/* Category.self, ChildCategory.self,*/ configurations: config)
+//    
+//    // 더미 ModelContext 생성
+//    let context = container.mainContext
+//    
+//    // 미리보기용 카테고리 및 태그 생성
+//    let previewCategory = Category(type: .programming)
+//    let previewTag = ChildCategory(type: .swift)
+//    previewTag.category = previewCategory
+//    
+//    // 미리보기용 로그 생성
+//    let previewLog = LogMainData(
+//        id: 1,
+//        title: "SwiftUI 학습",
+//        keep: "SwiftUI 기본 개념을 이해했다",
+//        problem: "복잡한 레이아웃 구성이 어려웠다",
+//        tryContent: "더 많은 예제를 통해 연습해보기",
+//        creationDate: Date(),
+//        category: previewCategory,
+//        childCategory: previewTag
+//    )
+//    
+//    return LogListCell(logMainData: previewLog)
+//}

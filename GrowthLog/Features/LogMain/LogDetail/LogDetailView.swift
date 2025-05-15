@@ -16,19 +16,13 @@ struct LogDetailView: View {
     
     /// 더미에서 LogMainData로 수정
     let logMainData: LogMainData
-    //@StateObject private var viewModel: LogListViewModel
     
     private let contentsLeading: CGFloat = 7
-    
-//    init(logMainData: LogMainData, modelContext: ModelContext) {
-//        self.logMainData = logMainData
-//        _viewModel = StateObject(wrappedValue: LogListViewModel(modelContext: modelContext))
-//    }
     
     var body: some View {
         ZStack {
             if isShowEditorView {
-                LogEditorView(isShowEditorView: $isShowEditorView, logMainData: logMainData)
+                LogEditorView(isShowEditorView: $isShowEditorView, logMainData: logMainData, maxId: nil)
             } else  {
                 RoundedRectangle(cornerRadius: 20)
                     .fill(.growthGreen.opacity(0.3))
@@ -47,15 +41,17 @@ struct LogDetailView: View {
                                     RoundedRectangle(cornerRadius: 7)
                                         .fill(.growthGreen)
                                 )
+                            
                             HStack(spacing: 0) {
-//                                ForEach(logMainData.childCategory? ?? ) {
-                                    Text("#\(logMainData.childCategory?.name ?? "")")
-                                        .font(.footnote)
-                                        .padding(.horizontal, 5)
-//                                }
+                                ForEach(logMainData.childCategories) { tag in
+                                    Text("#\(tag.name)")
+                                        .font(.caption)
+                                        .padding(.horizontal, 2)
+                                }
                             }
+                            .padding(.horizontal, 5)
                         }
-                        .padding(.horizontal , 5)
+                        .padding(.horizontal , 10)
                         
                         Spacer()
                         
@@ -110,7 +106,6 @@ struct LogDetailView: View {
                             
                             Text(logMainData.tryContent)
                                 .font(.footnote)
-                                .bold()
                                 .padding(.leading, contentsLeading)
                             
                             Spacer()
@@ -142,41 +137,27 @@ struct LogDetailView: View {
                 .offset(x: 125, y: 275)
             }
         }
-        .padding(EdgeInsets(top: 20, leading: 30, bottom: 30, trailing: 30))
+        .padding(EdgeInsets(top: 20, leading: 20, bottom: 30, trailing: 20))
         .navigationTitle("회고 상세")
     }
 }
 
-#Preview {
-    // SwiftData 미리보기 환경 설정
-//    let config = ModelConfiguration(isStoredInMemoryOnly: true)
-//    let container = try! ModelContainer(for: LogMainData.self, Category.self, ChildCategory.self, configurations: config)
+//#Preview {
+//    // 미리보기용 카테고리 및 태그 생성
+//    let previewCategory = Category(type: .programming)
+//    let previewTag = ChildCategory(type: .swift)
 //    
-//    // 더미 ModelContext 생성
-//    let context = container.mainContext
-//    
-    // 미리보기용 카테고리 및 태그 생성
-    let previewCategory = Category(type: .programming)
-    let previewTag = ChildCategory(type: .swift)
-//    previewTag.category = previewCategory
-    
-    // 미리보기용 로그 생성
-    let previewLog = LogMainData(
-        id: 1,
-        title: "SwiftUI 학습",
-        keep: "SwiftUI 기본 개념을 이해했다",
-        problem: "복잡한 레이아웃 구성이 어려웠다",
-        tryContent: "더 많은 예제를 통해 연습해보기",
-        creationDate: Date(),
-        category: previewCategory,
-        childCategory: previewTag
-    )
-    
-//    context.insert(previewCategory)
-//    context.insert(previewTag)
-//    context.insert(previewLog)
-//    
-    // viewModel이 아닌 context를 전달해야 함
-//    return LogDetailView(logMainData: previewLog, modelContext: context)
-    LogDetailView(logMainData: previewLog)
-}
+//    // 미리보기용 로그 생성
+//    let previewLog = LogMainData(
+//        id: 1,
+//        title: "SwiftUI 학습",
+//        keep: "SwiftUI 기본 개념을 이해했다",
+//        problem: "복잡한 레이아웃 구성이 어려웠다",
+//        tryContent: "더 많은 예제를 통해 연습해보기",
+//        creationDate: Date(),
+//        category: previewCategory,
+//        childCategory: previewTag
+//    )
+//
+//    LogDetailView(logMainData: previewLog)
+//}
