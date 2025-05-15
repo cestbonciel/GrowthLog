@@ -12,6 +12,21 @@ import SwiftData
 struct GrowthLogApp: App {
     // 온보딩 실행
     @AppStorage("hasSeenOnboarding") var hasSeenOnboarding: Bool = false
+
+    //테마 변경
+    @AppStorage("themeMode") private var themeRawValue: String = ThemeMode.system.rawValue
+
+    private var selectedTheme: ColorScheme? {
+            switch ThemeMode(rawValue: themeRawValue) ?? .system {
+            case .light:
+                return .light
+            case .dark:
+                return .dark
+            case .system:
+                return nil
+            }
+    }
+
     // SwiftData 컨테이너에 Category, Tag 를 등록 (아직 모델이 준비되지 않음)
     init() {
         // 1) 새로운 Appearance 객체 생성
@@ -37,8 +52,10 @@ struct GrowthLogApp: App {
             // 첫 실행일때 온보딩 뷰 실행
             if hasSeenOnboarding {
                 LogMainView()
+                    .preferredColorScheme(selectedTheme)
             } else {
                 OnboardingView()
+                    .preferredColorScheme(selectedTheme)
             }
 
             //WeeklyStatsView()

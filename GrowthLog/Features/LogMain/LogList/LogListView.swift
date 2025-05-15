@@ -77,7 +77,7 @@ struct LogListView: View {
                 }
             }
             .navigationDestination(isPresented: $isShowSampleCell) {
-                //LogSettingView()
+                SettingView()
             }
         }
     }
