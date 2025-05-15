@@ -11,13 +11,15 @@ import SwiftUI
 struct LogMainView: View {
     /// TODO: SwiftData 저장한 것 공유
     @State private var selectedTab = 1
+    @Environment(\.modelContext) private var modelContext
+
     /// TODO: TabView가 iOS 18+ 이라 분기처리 필요할 수도 있음
     var body: some View {
         TabView(selection: $selectedTab) {
             SearchFilterView()
                 .tabItem { Image(systemName: "magnifyingglass") }
                 .tag(0)
-            LogListView()
+            LogListView(modelContext: modelContext)
                 .tabItem { Image(systemName: "square.stack.3d.up.fill") }
                 .tag(1)
             StatisticsView()
@@ -30,4 +32,6 @@ struct LogMainView: View {
 
 #Preview {
     LogMainView()
+        .modelContainer(for: [LogMainData.self/*, Category.self, ChildCategory.self*/], inMemory: true)
+
 }

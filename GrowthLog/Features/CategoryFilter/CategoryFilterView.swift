@@ -9,14 +9,26 @@ import SwiftUI
 import SwiftData
 
 struct CategoryFilterView: View {
-    @Environment(\.dismiss) private var dismiss
+    @AppStorage("hasSeenOnboarding") var hasSeenOnboarding: Bool = false
+    @Binding var selectedTags: [ChildCategoryType]
 
+    @Environment(\.dismiss) private var dismiss
     @State private var viewModel = CategoryFilterViewModel()
     @State private var showLimitAlert = false
 
     var body: some View {
         NavigationStack {
             VStack(spacing: 10) {
+
+
+                //온보딩 뷰 등장 잠깐 여기에 넣어둠,
+#if DEBUG
+                Button("온보딩 리셋") {
+                    hasSeenOnboarding = false
+                }
+#endif
+
+
                 if !viewModel.selectedTags.isEmpty {
                     SelectedTagsHeaderView(
                         tags: viewModel.selectedTags,
@@ -34,15 +46,18 @@ struct CategoryFilterView: View {
 
                     Button("적용하기") {
                         print("선택된 태그:", viewModel.selectedTags.map { $0.name })
+                        //viewModel.filteredResultsOfChildCategory(for: )
 
+                        selectedTags = viewModel.selectedTags.map(\.type)
                         dismiss()
                     }
+
                     .frame(maxWidth: .infinity)
                     .font(.title3)
                     .bold()
                     .padding()
                     .background(Color.green)
-                    .foregroundColor(.white)
+                    .foregroundColor(.black)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
                     .padding()
                 }
@@ -82,6 +97,9 @@ private struct SelectedTagsHeaderView: View {
         .overlay(alignment: .trailing) {
             Button(action: onClear) {
                 Image(systemName: "x.circle")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 20, height: 20)
                     .foregroundStyle(.gray)
                     .padding()
             }
@@ -146,8 +164,27 @@ private struct CategorySectionView: View {
 
 
 
+struct StatefulPreviewWrapper<Value, Content: View>: View {
+    @State private var value: Value
+    var content: (Binding<Value>) -> Content
+
+    init(_ initialValue: Value, @ViewBuilder content: @escaping (Binding<Value>) -> Content) {
+        self._value = State(initialValue: initialValue)
+        self.content = content
+    }
+
+    var body: some View {
+        content($value)
+    }
+}
+
+
+
 
 
 #Preview {
-    CategoryFilterView()
+
+    StatefulPreviewWrapper([ChildCategoryType.swift]) { binding in
+        CategoryFilterView(selectedTags: binding)
+    }
 }

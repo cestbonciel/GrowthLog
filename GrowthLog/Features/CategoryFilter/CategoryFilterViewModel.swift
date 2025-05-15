@@ -10,7 +10,8 @@ import SwiftUI
 import SwiftData
 
 @Observable
-class CategoryFilterViewModel {
+final class CategoryFilterViewModel: ObservableObject {
+    
     var categories: [Category]
 
     init() {
@@ -59,4 +60,6 @@ class CategoryFilterViewModel {
             }
         }
     }
+
+
 }
