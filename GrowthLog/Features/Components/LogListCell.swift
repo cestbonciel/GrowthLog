@@ -20,7 +20,7 @@ struct LogListCell: View {
             VStack(spacing: 0) {
                 HStack {
                     VStack(alignment: .leading) {
-                        Text(logMainData.category?.title ?? "카테고리 없음")
+                        Text(logMainData.childCategory?.category?.title ?? "카테고리 없음")
                             .font(.caption)
                             .foregroundStyle(.white)
                             .padding(.horizontal, 10)
