@@ -5,6 +5,17 @@
 ## User settings
 xcuserdata/
 
+# Xcode project.pbxproj only
+**/*.xcodeproj/project.pbxproj
+
+# xcshareddata 디렉터리 (xcodeproj 내부)
+**/*.xcodeproj/xcshareddata/
+
+# workspace contents 파일
+**/*.xcworkspace/contents.xcworkspacedata
+
+
+
 ### macOS ###
 # General
 .DS_Store
