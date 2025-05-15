@@ -8,6 +8,8 @@ import SwiftUI
 import SwiftData
 
 struct LogListView: View {
+    @Environment(\.modelContext) var context
+    
     @State private var isShowSampleCell = false
     @State private var isShowEditorView = false
     @State private var isLoading = true
@@ -98,6 +100,7 @@ struct LogListView: View {
                 .listRowSeparator(.hidden)
                 .listRowBackground(Color.clear)
             }
+            .onDelete(perform: delete)
         }
     }
 }
