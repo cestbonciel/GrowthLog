@@ -20,7 +20,7 @@ struct LogEditorView: View {
     @State private var selectedCategoryId: Int = 1
     
     @State private var selectedChildCategory: [ChildCategory] = []
-    @State private var insertTagTemp: [ChildCategory] = []
+    @State private var didLoadInitialData = false
     
     @State var selectedCategoryType: CategoryType = .tech
     @StateObject private var viewModel = LogEditorViewModel()
@@ -29,7 +29,6 @@ struct LogEditorView: View {
     @State var isSelectedAlert = false
     
     @Binding var isShowEditorView: Bool
-    @State private var didLoadInitialData = false
     
     var logMainData: LogMainData? = nil
     var maxId: Int?
@@ -49,17 +48,14 @@ struct LogEditorView: View {
     }
     
     private var headerTags: [ChildCategory] {
-        // 1) 편집 모드에서 이미 저장된 childCategories 가 있으면 그걸 그대로
-        if let existing = logMainData?.childCategories, !existing.isEmpty {
-          return existing
-        }
-        // 2) 모달에서 새로 선택한 게 있으면 그것을
-        if !selectedChildCategory.isEmpty {
-          return selectedChildCategory
-        }
-        // 3) 그 외에는 빈 배열
-        return []
+      if let saved = logMainData?.childCategory {
+        return [saved]
       }
+      if !selectedChildCategory.isEmpty {
+        return selectedChildCategory
+      }
+      return []
+    }
     
     var body: some View {
         ZStack {
@@ -77,54 +73,6 @@ struct LogEditorView: View {
                                 ) {
                                   presentCardModal = true
                                 }
-                        
-                        
-//                        Button {
-//                            presentCardModal = true
-//                        } label: {
-//                            Text(selectedCategoryType.rawValue)
-//                                .font(.callout)
-//                                .foregroundStyle(.white)
-//                                .padding(.horizontal, 10)
-//                                .padding(.vertical, 5)
-//                                .background(
-//                                    RoundedRectangle(cornerRadius: 7)
-//                                        .fill(.growthGreen)
-//                                )
-//                                .onAppear {
-//                                    if let categoryTitle = logMainData?.category?.type {
-//                                        selectedCategoryType  = categoryTitle
-//                                    }
-//                                    
-//                                }
-//                        }
-//                        
-//                        HStack(spacing: 0) {
-//                            Text("#\(logMainData?.childCategory?.name ?? "")")
-//                                    .font(.caption)
-//                                    .padding(.horizontal, 2)
-//                                    .padding(.vertical, 2)
-////                                    .onAppear {
-////                                        // 이미 초기화했으면 건너뛰기
-////                                        guard !didLoadInitialData else { return }
-////                                        didLoadInitialData = true
-////                                        
-////                                        // 수정 모드일 때만
-////                                        if let log = logMainData {
-////                                            // 1) 버튼에 표시할 카테고리
-////                                            selectedCategoryType = log.category?.type ?? .tech
-////                                            
-////                                            // 2) 헤더에 표시할 태그 배열
-////                                            selectedChildCategory = log.category?.tags ?? []
-////                                            
-////                                            // 3) viewModel 내부에도 isSelected 업데이트
-////                                            let types = selectedChildCategory.map(\.type)
-////                                            viewModel.applySelections(to: selectedCategoryType,modalSelectedTags: types)
-////                                        }
-////                                    }
-//                        }
-//                        .padding(.horizontal, 5)
-                        
                     }
                     
                     Spacer()
@@ -260,16 +208,22 @@ struct LogEditorView: View {
             }
             .padding(.horizontal, 20)
             .onAppear {
+                // 수정 모드 진입 시 한 번만 초기화
                 guard !didLoadInitialData else { return }
                 didLoadInitialData = true
                 if let log = logMainData {
-                    // 1) 선택된 카테고리 복원
+                    // 1) 카테고리 복원
                     selectedCategoryType = log.category?.type ?? .tech
-                    // 2) 선택된 태그 복원 (단일이든 복수든)
-                    selectedChildCategory = log.childCategories
-                    // 3) 뷰모델에 동기화
+                    // 2) childCategory 하나를 배열로 저장
+                    if let child = log.childCategory {
+                        selectedChildCategory = [child]
+                    }
+                    // 3) 뷰모델 동기화
                     let types = selectedChildCategory.map(\.type)
-                    viewModel.applySelections(to: selectedCategoryType, modalSelectedTags: types)
+                    viewModel.applySelections(
+                        to: selectedCategoryType,
+                        modalSelectedTags: types
+                    )
                 }
             }
         }
@@ -340,12 +294,45 @@ extension LogEditorView {
             logMainData.tryContent = tryContent
             logMainData.creationDate = Date.now
         } else {
-            let inputMainData = LogMainData(id: maxId.map { $0 + 1 } ?? 1, title: title, keep: keep, problem: problem, tryContent: tryContent, creationDate: Date.now, category: inputCategory, childCategories: inputTag)
+            let inputMainData = LogMainData(id: maxId.map { $0 + 1 } ?? 1, title: title, keep: keep, problem: problem, tryContent: tryContent, creationDate: Date.now, category: inputCategory, childCategory: inputTag.first)
             context.insert(inputMainData)
         }
         
     }
 }
+
+
+
+struct CategoryHeaderView: View {
+  let selectedCategoryType: CategoryType
+  let tags: [ChildCategory]
+  let onTapCategory: () -> Void
+
+  var body: some View {
+      VStack(alignment: .leading) {
+      Button { onTapCategory() } label: {
+        Text(selectedCategoryType.rawValue)
+          .font(.callout)
+          .foregroundStyle(.white)
+          .padding(.horizontal, 10).padding(.vertical, 5)
+          .background(RoundedRectangle(cornerRadius: 7).fill(.growthGreen))
+      }
+      HStack(spacing: 4) {
+        ForEach(tags) { tag in
+          Text("#\(tag.name)")
+            .font(.caption2)
+            .padding(.horizontal, 5)
+            .background(Color.gray.opacity(0.1))
+            .cornerRadius(4)
+        }
+      }
+    }
+    .padding(.vertical, 5)
+  }
+}
+
+
+
 
 
 
@@ -466,58 +453,6 @@ struct CategoryModal:  View {
 
 }
 
-struct CategoryHeaderView: View {
-  let selectedCategoryType: CategoryType
-  let tags: [ChildCategory]
-  let onTapCategory: () -> Void
-
-  var body: some View {
-     VStack {
-      Button { onTapCategory() } label: {
-        Text(selectedCategoryType.rawValue)
-          .font(.callout)
-          .foregroundStyle(.white)
-          .padding(.horizontal, 10).padding(.vertical, 5)
-          .background(RoundedRectangle(cornerRadius: 7).fill(.growthGreen))
-      }
-      HStack(spacing: 4) {
-        ForEach(tags) { tag in
-          Text("#\(tag.name)")
-            .font(.caption2)
-            .padding(4)
-            .background(Color.gray.opacity(0.1))
-            .cornerRadius(4)
-        }
-      }
-    }
-    .padding(.vertical, 10)
-  }
-}
-
-
-struct EditorFieldsView: View {
-  @Binding var keep: String
-  @Binding var problem: String
-  @Binding var tryContent: String
-
-  var body: some View {
-    VStack(alignment: .leading, spacing: 16) {
-      Group {
-        Text("Keep").bold()
-        TextEditor(text: $keep).frame(height: 100)
-      }
-      Group {
-        Text("Problem").bold()
-        TextEditor(text: $problem).frame(height: 100)
-      }
-      Group {
-        Text("Try").bold()
-        TextEditor(text: $tryContent).frame(height: 100)
-      }
-    }
-    .padding(.horizontal)
-  }
-}
     
 #Preview {
     @Previewable @State var isShowEditorView2: Bool = false

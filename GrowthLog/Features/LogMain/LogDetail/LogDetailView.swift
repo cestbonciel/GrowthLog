@@ -43,11 +43,9 @@ struct LogDetailView: View {
                                 )
                             
                             HStack(spacing: 0) {
-                                ForEach(logMainData.childCategories) { tag in
-                                    Text("#\(tag.name)")
+                                Text("#\(logMainData.childCategory?.name ?? "")")
                                         .font(.caption)
                                         .padding(.horizontal, 2)
-                                }
                             }
                             .padding(.horizontal, 5)
                         }
