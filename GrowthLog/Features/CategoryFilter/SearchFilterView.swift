@@ -10,35 +10,38 @@ import SwiftData
 
 
 struct SearchFilterView: View {
-    // 1) SwiftData에 저장된 전체 로그를 불러옵니다
+    // SwiftData에 저장된 전체 로그를 불러옵니다
     @Query(sort: [SortDescriptor(\LogMainData.creationDate, order: .reverse)])
     private var allLogs: [LogMainData]
 
-    // 2) 검색어 & 태그 필터링 상태
+    // 카테고리 필터 뷰모델을 한 번만 생성, 다음 스택에서 @ObservedObject로 전달할 것
+    @StateObject private var categoryViewModel = CategoryFilterViewModel()
+
+    // 검색어 & 태그 필터링 상태
     @State private var searchText = ""
     @State private var selectedTags: [ChildCategoryType] = []
     @State private var isShowingFilter = false
 
 
 
-    // 3) 태그 필터 + 텍스트 필터 조합 계산 프로퍼티
+    // 태그 필터 + 텍스트 필터 조합 계산 프로퍼티
     private var filteredLogs: [LogMainData] {
-        // 3-1) 태그 필터
+        // 태그 필터
         var result = allLogs
         if !selectedTags.isEmpty {
             result = result.filter { log in
                 guard let child = log.childCategory else { return false }
-               	return selectedTags.contains(child.type)
+                return selectedTags.contains(child.type)
             }
         }
-        // 3-2) 검색어 필터
+        // 검색어 필터
         if !searchText.isEmpty {
             result = result.filter { log in
                 let titleOrKeep = log.title ?? log.keep
                 return titleOrKeep.localizedCaseInsensitiveContains(searchText)
-                    || log.keep.localizedCaseInsensitiveContains(searchText)
-                    || log.problem.localizedCaseInsensitiveContains(searchText)
-                    || log.tryContent.localizedCaseInsensitiveContains(searchText)
+                || log.keep.localizedCaseInsensitiveContains(searchText)
+                || log.problem.localizedCaseInsensitiveContains(searchText)
+                || log.tryContent.localizedCaseInsensitiveContains(searchText)
             }
         }
         return result
@@ -48,7 +51,7 @@ struct SearchFilterView: View {
         NavigationStack {
             ScrollView {
                 Group {
-                    // 4-1) 검색어/태그 모두 비어 있을 때 안내문구
+                    // 검색어도 없고 태그도 없고
                     if searchText.isEmpty && selectedTags.isEmpty {
                         VStack(spacing: 8) {
                             Text("검색어를 입력하거나 필터를 설정해주세요")
@@ -62,50 +65,93 @@ struct SearchFilterView: View {
                         }
                         .padding(.top, 100)
                     }
-                    // 4-2) 필터 또는 검색어에 매칭되는 로그가 없으면
+                    // 칭 결과 무
                     else if filteredLogs.isEmpty {
                         Text("검색 결과가 없습니다")
                             .foregroundColor(.gray)
                             .font(.title3)
                             .padding(.top, 100)
                     }
-                    // 4-3) 매칭되는 로그가 있으면 리스트 표시
+                    // 매칭 결과 유
                     else {
-                        LazyVStack(spacing: 12) {
-                            ForEach(filteredLogs, id: \.id) { log in
-                                NavigationLink {
-                                    LogDetailView(logMainData: log)
-                                } label: {
-                                    LogListCell(logMainData: log)
+                        VStack(spacing: 12) {
+
+                            HStack {
+                                Image(systemName: "line.3.horizontal.decrease")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 20, height: 20)
+                                    .foregroundColor(Color.green.opacity(0.2))
+
+                                // 만약 카테고리 필터가 적용될 경우 태그 띄우기
+                                if !selectedTags.isEmpty {
+                                    ScrollView(.horizontal, showsIndicators: false) {
+                                        HStack(spacing: 8) {
+                                            ForEach(selectedTags, id: \.self) { type in
+                                                Text(type.rawValue)
+                                                    .font(.caption2)
+                                                    .padding(.vertical, 4)
+                                                    .padding(.horizontal, 8)
+                                                    .background(Color.green.opacity(0.2))
+                                                    .foregroundColor(.green)
+                                                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                                            }
+                                        }
+                                        .padding(.horizontal, 5)
+                                    }
                                 }
-                                .buttonStyle(.plain)
+
+                                Spacer()
+
                             }
+                            .padding(.leading, 20)
+
+                            Spacer()
+
+
+                            // 총 개수 표시
+                            HStack {
+                                Text("총 \(filteredLogs.count)개 결과")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                                Spacer()
+                            }
+                            .padding(.horizontal)
+
+                            LazyVStack(spacing: 12) {
+                                ForEach(filteredLogs, id: \.id) { log in
+                                    NavigationLink {
+                                        LogDetailView(logMainData: log)
+                                    } label: {
+                                        LogListCell(logMainData: log)
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+                            }
+                            .padding(.horizontal, 20)
                         }
-                        .padding()
                     }
                 }
-            }
-            // 5) SwiftUI  시점에 맞춰 검색바와 필터 버튼 배치
-            .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always))
-            .navigationTitle("검색")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button {
-                        isShowingFilter = true
-                    } label: {
-                        Image(systemName: "line.3.horizontal.decrease")
+                .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always))
+                .navigationTitle("검색")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button {
+                            isShowingFilter = true
+                        } label: {
+                            Image(systemName: "line.3.horizontal.decrease")
+                        }
                     }
                 }
-            }
-            // 6) 필터 화면으로 이동, 선택된 태그를 binding으로 전달
-            .navigationDestination(isPresented: $isShowingFilter) {
-                CategoryFilterView(selectedTags: $selectedTags)
+                // 필터 화면으로 이동, 선택된 태그를 binding으로 전달
+                .navigationDestination(isPresented: $isShowingFilter) {
+                    CategoryFilterView(viewModel: categoryViewModel, selectedTags: $selectedTags)
+                }
             }
         }
     }
 }
-
-#Preview {
-    SearchFilterView()
-}
+    #Preview {
+        SearchFilterView()
+    }
