@@ -8,85 +8,90 @@
 import SwiftUI
 
 struct OnboardingView: View {
-
     @AppStorage("hasSeenOnboarding") var hasSeenOnboarding: Bool = false
     @State private var currentPage = 0
 
     let pages = [
-            """
-            [개발자의 성장, 기록에서 시작됩니다]\n
-            ✍️ 작은 회고가 쌓여, 큰 성장을 만듭니다
-            개발자라면 누구나 겪는 문제와 해결, 오늘의 배움들을 놓치지 마세요.
-            GrowthLog는 그런 하루를 차곡차곡 담아두는 공간입니다.
-            """,
-
-            """
-            [KPT 회고, 쉽고 체계적으로]\n
-            📂 카테고리와 태그를 이용해 회고를 명확하게 분류하세요.
-            기본 문법, 사이드 프로젝트, 인터뷰 준비 등 어떤 주제든
-            명확하게 Keep, Problem, Try로 하루를 정리할 수 있어요.
-            """,
-
-            """
-            [내 성장의 흐름을 통계로 확인하세요]\n
-            📊 얼마나 성장했는지 그래프로 직관적으로 확인
-            회고 빈도, 주요 주제, 자주 등장하는 키워드까지 한 눈에 볼 수 있어요.
-            """,
-
-            """
-            [지금, 나만의 성장 로그를 시작해보세요]\n
-            🚀 기록하는 습관이 만드는 성장 곡선
-            지금 첫 회고를 작성하고, 당신만의 개발 여정을 시작해보세요.
-            """
+        "[ 반갑습니다 ]\n\nGrowthLog는 오늘의 배움과\n고민을 기록하는 공간입니다.\nKeep, Problem, Try로\n오늘을 구조화할 수 있어요.",
+        " [ 필터링 ]\n\n카테고리와 태그로 회고를 정리하고,\n필터와 검색으로 필요한 회고를 빠르게 찾으세요.",
+        "[ 내 성장의 흐름을 통계로 ]\n\n회고 빈도와 키워드를 그래프로 확인하며\n나의 성장 패턴을 한눈에 파악하세요.",
+        "[ 지금, 시작하세요 ]\n\n기록하는 습관이 성장의 곡선을 만듭니다.\n오늘 첫 회고를 써보세요."
     ]
+
+    let images = ["detail", "filter", "statics", "enroll"]
+
+    var isPad: Bool {
+        UIDevice.current.userInterfaceIdiom == .pad
+    }
 
     var body: some View {
         VStack {
             TabView(selection: $currentPage) {
                 ForEach(pages.indices, id: \.self) { index in
-                    VStack(spacing: 24) {
+                    if isPad {
+                        // 아이패드 전용: 가로 레이아웃
+                        HStack(spacing: 32) {
+                            Image(images[index])
+                                .resizable()
+                                .scaledToFit()
+                                .cornerRadius(16)
+                                .padding()
+
+                            Spacer()
+
+                            VStack(spacing: 24) {
+                                Text(pages[index])
+                                    .font(.title)
+                                    .bold()
+                                    .multilineTextAlignment(.center)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding()
 
 
-                        Image("apple")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(height: 400)
-                            .background(.gray.opacity(0.1))
-
-                        Rectangle()
-                            .fill(.gray.opacity(0.4))
-                            .frame(height: 1)
-
-
-                        ZStack {
-                            RoundedRectangle(cornerRadius: 12)
-                                .fill(.gray.opacity(0.3))
-
-                            Text(pages[index])
-                                .multilineTextAlignment(.leading)
-                                .font(.caption)
-                                .padding(.horizontal)
-
+                            }
+                            .padding(.vertical, 40)
+                            .frame(maxWidth: .infinity)
                         }
-                        .padding(.vertical, 10)
-                        .padding(.horizontal, 20)
+                        .padding()
+                        .tag(index)
+                    } else {
+                        // 아이폰: 기존 세로 레이아웃
+                        VStack {
+                            Image(images[index])
+                                .resizable()
+                                .scaledToFit()
+                                .frame(height: 400)
+                                .clipped()
+
+                            Rectangle()
+                                .fill(.gray.opacity(0.4))
+                                .frame(height: 1)
+
+                            ZStack {
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(.clear)
 
 
-                        Spacer()
+                                Text(pages[index])
+                                    .multilineTextAlignment(.center)
+                                    .font(.body)
+                                    .bold()
+                                    .padding()
+                            }
+                            .padding(.bottom, 20)
+                            .padding(.horizontal, 20)
 
-
+                            Spacer()
+                        }
+                        .frame(maxWidth: .infinity)
+                        .tag(index)
                     }
-                    .tag(index)
-                    .frame(maxWidth: .infinity)
                 }
             }
             .tabViewStyle(PageTabViewStyle(indexDisplayMode: .always))
-            //.tabViewStyle(.page)
-
-
-            // ✅ SwiftUI 기본 페이지 인디케이터
             .animation(.easeInOut, value: currentPage)
 
+            // ✅ 버튼은 공통
             Button(action: {
                 if currentPage < pages.count - 1 {
                     currentPage += 1
@@ -105,9 +110,10 @@ struct OnboardingView: View {
             }
             .padding(.bottom, 30)
         }
-        .padding(0)
     }
 }
+
+
 
 #Preview {
     OnboardingView()

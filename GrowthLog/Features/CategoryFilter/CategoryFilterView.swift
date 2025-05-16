@@ -10,24 +10,18 @@ import SwiftData
 
 struct CategoryFilterView: View {
     @AppStorage("hasSeenOnboarding") var hasSeenOnboarding: Bool = false
+
+    //카테고리 필터 뷰모델을 SearchFilterView에서 생성했음.
+    @ObservedObject var viewModel: CategoryFilterViewModel
     @Binding var selectedTags: [ChildCategoryType]
 
     @Environment(\.dismiss) private var dismiss
-    @State private var viewModel = CategoryFilterViewModel()
+
     @State private var showLimitAlert = false
 
     var body: some View {
         NavigationStack {
             VStack(spacing: 10) {
-
-
-                //온보딩 뷰 등장 잠깐 여기에 넣어둠,
-#if DEBUG
-                Button("온보딩 리셋") {
-                    hasSeenOnboarding = false
-                }
-#endif
-
 
                 if !viewModel.selectedTags.isEmpty {
                     SelectedTagsHeaderView(
@@ -46,7 +40,6 @@ struct CategoryFilterView: View {
 
                     Button("적용하기") {
                         print("선택된 태그:", viewModel.selectedTags.map { $0.name })
-                        //viewModel.filteredResultsOfChildCategory(for: )
 
                         selectedTags = viewModel.selectedTags.map(\.type)
                         dismiss()
@@ -83,10 +76,10 @@ private struct SelectedTagsHeaderView: View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack {
                 ForEach(tags, id: \.self) { tag in
-                    Text(tag.name)
+                    Text("#\(tag.name)")
                         .padding(.vertical, 6)
                         .padding(.horizontal, 12)
-                        //.bold()
+                    //.bold()
                         .background(Color.green)
                         .foregroundColor(tag.isSelected ? .black : .primary)
                         .clipShape(RoundedRectangle(cornerRadius: 10))
@@ -120,7 +113,7 @@ private struct CategorySectionView: View {
     @Binding var showLimitAlert: Bool
 
     let category: Category
-    var viewModel: CategoryFilterViewModel
+    @ObservedObject var viewModel: CategoryFilterViewModel
 
     var body: some View {
         VStack(alignment: .leading) {
@@ -139,14 +132,29 @@ private struct CategorySectionView: View {
                                 showLimitAlert = true
                             }
                         } label: {
-                            Text(tag.name)
-                                .padding(.vertical, 8)
-                                .padding(.horizontal, 16)
-                                .frame(height: 40)
-                                .font(.footnote)
-                                .background(tag.isSelected ? Color.green : Color.gray.opacity(0.2))
-                                .foregroundColor(tag.isSelected ? .black : .primary)
-                                .clipShape(RoundedRectangle(cornerRadius: 12))
+                            // 아이패드
+                            if UIDevice.current.userInterfaceIdiom == .pad {
+                                Text(tag.name)
+                                    .padding(.vertical, 12)
+                                    .padding(.horizontal, 24)
+                                    .frame(height: 80)
+                                    .font(.body)
+                                    .background(tag.isSelected ? Color.green : Color.gray.opacity(0.2))
+                                    .foregroundColor(tag.isSelected ? .black : .primary)
+                                    .clipShape(RoundedRectangle(cornerRadius: 12))
+
+                            } else {
+                                // 아이폰
+                                Text(tag.name)
+                                    .padding(.vertical, 8)
+                                    .padding(.horizontal, 16)
+                                    .frame(height: 40)
+                                    .font(.footnote)
+                                    .background(tag.isSelected ? Color.green : Color.gray.opacity(0.2))
+                                    .foregroundColor(tag.isSelected ? .black : .primary)
+                                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                            }
+
                         }
                     }
                 }
@@ -183,8 +191,7 @@ struct StatefulPreviewWrapper<Value, Content: View>: View {
 
 
 #Preview {
-
     StatefulPreviewWrapper([ChildCategoryType.swift]) { binding in
-        CategoryFilterView(selectedTags: binding)
+        CategoryFilterView(viewModel: CategoryFilterViewModel(), selectedTags: binding)
     }
 }
