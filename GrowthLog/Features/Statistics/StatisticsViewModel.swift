@@ -448,7 +448,6 @@ final class StatisticsViewModel: ObservableObject {
     
     // 문자열에서 ChildCategoryType 열거형으로 변환
     private func getChildCategoryType(from string: String) -> ChildCategoryType {
-        print("childCategoryType 변환: \(string)")
         switch string {
         case "컴퓨터과학": return .computerScience
         case "네트워크": return .network
