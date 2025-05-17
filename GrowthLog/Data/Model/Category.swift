@@ -7,6 +7,7 @@
 import Foundation
 import SwiftData
 
+/// 카테고리 타입: 카테고리 4개케이스
 enum CategoryType: String, CaseIterable, Codable, Identifiable {
     case tech = "기술"
     case programming = "프로그래밍"
@@ -16,6 +17,7 @@ enum CategoryType: String, CaseIterable, Codable, Identifiable {
     var id: Self { self }
 }
 /// 모델 정의: Cascade 삭제 규칙 적용
+
 @Model
 final class Category {
     @Attribute var type: CategoryType

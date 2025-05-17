@@ -9,6 +9,7 @@ import SwiftUI
 
 /// MARK: - App 에 뿌려질 메인 뷰
 struct LogMainView: View {
+    /// TODO: SwiftData 저장한 것 공유
     @State private var selectedTab = 1
     @Environment(\.modelContext) private var modelContext
 
@@ -21,7 +22,7 @@ struct LogMainView: View {
             LogListView(modelContext: modelContext)
                 .tabItem { Image(systemName: "square.stack.3d.up.fill") }
                 .tag(1)
-            StatsticsView()
+            StatisticsView()
                 .tabItem { Image(systemName: "chart.xyaxis.line") }
                 .tag(2)
         }

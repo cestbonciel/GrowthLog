@@ -1,15 +1,16 @@
 //
 //  LogEditorViewModel.swift
-//  GrowthLog
 //
 //  Created by JuYong Lee on 5/12/25.
+//  GrowthLog
 //
 
 import SwiftUI
 
+/// 작성, 수정 화면 뷰모델
 final class LogEditorViewModel: ObservableObject {
     var categories: [Category]
-
+    
     init() {
         self.categories = [
             Category(type: .programming, tags: [
@@ -33,5 +34,10 @@ final class LogEditorViewModel: ObservableObject {
         ]
     }
     
+    // 뷰모델의 `tags.isSelected` 상태를 덮어쓰기
+    func applySelections(to catType: CategoryType, modalSelectedTags: [ChildCategoryType]) {
+        guard let cat = categories.first(where: { $0.type == catType }) else { return }
+        cat.tags.forEach { $0.isSelected = modalSelectedTags.contains($0.type) }
+    }
     
 }

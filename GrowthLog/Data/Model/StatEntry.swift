@@ -8,12 +8,7 @@
 import Foundation
 
 // Models for period-based statistics(기간별 통계 모델) - 집계 통계 기록, 분석
-enum StatPeriod: String, CaseIterable, Identifiable {
-    case weekly = "주간"
-    case monthly = "월간"
-    
-    var id: String { rawValue }
-}
+
 
 /// 주간/월간 통계를 위한 샘플 데이터 모델
 struct StatEntry: Identifiable {
