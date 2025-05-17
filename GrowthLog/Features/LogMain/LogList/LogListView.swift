@@ -8,9 +8,10 @@ import SwiftUI
 import SwiftData
 
 struct LogListView: View {
+    @Environment(\.modelContext) var context
+    
     @State private var isShowSampleCell = false
     @State private var isShowEditorView = false
-    //@State private var jsonLogs: [LogData] = [] // JSON 원본 데이터를 위한 배열
     @State private var isLoading = true
     
     @Environment(\.modelContext) private var modelContext
@@ -50,7 +51,7 @@ struct LogListView: View {
                                             Image(systemName: "square.and.pencil")
                                                 .resizable()
                                                 .scaledToFit()
-                                                .frame(height: 30)
+                                                .frame(height: 25)
                                                 .foregroundStyle(.white)
                                                 .offset(x: 2, y: -2)
                                         }
@@ -65,7 +66,7 @@ struct LogListView: View {
                 }
             }
 //            .navigationTitle("GrowthLog")
-            .navigationTitle("목록")
+            .navigationTitle("회고 목록")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem {
@@ -99,6 +100,15 @@ struct LogListView: View {
                 .listRowSeparator(.hidden)
                 .listRowBackground(Color.clear)
             }
+            .onDelete(perform: delete)
+        }
+    }
+}
+
+extension LogListView {
+    func delete(_ indexSet: IndexSet) {
+        for index in indexSet {
+            context.delete(logMainData[index])
         }
     }
 }

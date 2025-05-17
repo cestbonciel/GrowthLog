@@ -8,27 +8,34 @@ import SwiftUI
 import SwiftData
 
 // MARK: - 개발회고 작성화면
-
 struct LogEditorView: View {
     @Environment(\.dismiss) var dismiss
+    @Environment(\.colorScheme) var colorScheme
+    @Environment(\.modelContext) var context
     
     @State private var title: String = ""
     @State private var keep: String = ""
     @State private var problem: String = ""
     @State private var tryContent: String = ""
     @State private var selectedCategoryId: Int = 1
-    @State private var selectedChildCategoryType: String = ""
+    
+    @State private var selectedChildCategory: [ChildCategory] = []
+    @State private var didLoadInitialData = false
+    
+    @State var selectedCategoryType: CategoryType = .tech
+    @StateObject private var viewModel = LogEditorViewModel()
     
     @State var presentCardModal = false
-    
+    @State var isSelectedAlert = false
     
     @Binding var isShowEditorView: Bool
     
-    
-    
     var logMainData: LogMainData? = nil
+    var maxId: Int?
     
-    private let contentsLeading: CGFloat = 7
+    private let contentsLeading: CGFloat = 10
+    private let contentsHeight: CGFloat = 100
+
     
     private var stackToPadding: CGFloat {
         logMainData == nil ? 20 : 0
@@ -40,6 +47,15 @@ struct LogEditorView: View {
         logMainData == nil ? 30 : 0
     }
     
+    private var headerTags: [ChildCategory] {
+      if let saved = logMainData?.childCategory {
+        return [saved]
+      }
+      if !selectedChildCategory.isEmpty {
+        return selectedChildCategory
+      }
+      return []
+    }
     
     var body: some View {
         ZStack {
@@ -49,65 +65,79 @@ struct LogEditorView: View {
             
             VStack(spacing: 0) {
                 HStack {
-                    VStack(alignment: .leading) {
-                        Button {
-                            presentCardModal = true
-                        } label: {
-                            Text("카테고리")
-                                .font(.callout)
-                                .foregroundStyle(.white)
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 5)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 7)
-                                        .fill(.growthGreen)
-                                )
-                        }
+                    VStack(alignment: .leading, spacing: 2) {
                         
-                        HStack(spacing: 0) {
-                            Group {
-                                Text("#태그")
-                                Text("#태그")
-                                Text("#태그")
-                            }
-                            .font(.footnote)
-                            .padding(.horizontal, 5)
-                        }
+                        CategoryHeaderView(
+                                  selectedCategoryType: selectedCategoryType,
+                                  tags: headerTags
+                                ) {
+                                  presentCardModal = true
+                                }
                     }
                     
                     Spacer()
                 }
-                .padding(.vertical)
+                .padding(.vertical, 17)
+                .padding(.horizontal, 6)
                 
+
                 Rectangle()
                     .frame(height: 1)
-                    .padding(.horizontal, 10)
+                    .padding(.horizontal, 8)
                 
-                TextField("제목 - KPT 회고", text: .constant(""))
+                TextField("제목 - KPT 회고", text: $title)
                     .font(.title)
                     .multilineTextAlignment(.center)
                     .padding(.top, 15)
+                    .onAppear {
+                        if let logMainDataTitle = logMainData?.title {
+                            title = logMainDataTitle
+                        }
+                    }
                 
+                // conetent(Keep/Problem/Try)
                 HStack {
+//                    EditorFieldsView(
+//                              keep: $keep,
+//                              problem: $problem,
+//                              tryContent: $tryContent
+//                            )
+                    
                     VStack(alignment: .leading, spacing: 0) {
                         Text("Keep")
                             .font(.subheadline)
                             .bold()
                             .padding(.vertical, 9)
                         
-//                        TextField("", text: .constant(logMainData?.keep ?? ""), prompt: Text("현재 만족하고 있는 부분"))
                         TextEditor(text: $keep)
-                            .frame(height: 120)
-                            .foregroundStyle(.black.opacity(5))
-                            .background(Color.gray.opacity(0.01))
-                            .cornerRadius(8)
                             .font(.footnote)
-                            .padding(.leading, contentsLeading)
+                            .frame(height: contentsHeight)
+                            .cornerRadius(8)
+                            .padding(.horizontal, contentsLeading)
                             .onAppear {
                                 if let oldKeep = logMainData?.keep {
-                                    keep = oldKeep
+                            		keep = oldKeep
                                 }
                             }
+                            .scrollContentBackground(.hidden)
+                            .background(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(.white.opacity(0.4))
+                            )
+                            .overlay(alignment: .topLeading) {
+                                Text("현재 만족하고 있는 부분")
+                                    .font(.footnote)
+                                    .foregroundStyle(keep.isEmpty ? (colorScheme == .dark ? .white : .gray) : .clear)
+                                    .padding(.horizontal, 15)
+                                    .padding(.vertical, 10)
+                            }
+                            // 글자 제한
+//                            .onChange(of: keep) { newValue in
+//                                if newValue.count > 50 {
+//                                    print(newValue.count)
+//                                    keep = String(newValue.prefix(50))
+//                                }
+//                            }
                         
                         Spacer()
                         
@@ -116,10 +146,29 @@ struct LogEditorView: View {
                             .bold()
                             .padding(.vertical, 9)
                         
-                        TextField("", text: .constant(logMainData?.problem ?? ""), prompt: Text("개선이 필요하다고 생각되는 부분"))
+                        TextEditor(text: $problem)
                             .font(.footnote)
+                            .frame(height: contentsHeight)
+                            .cornerRadius(8)
                             .padding(.leading, contentsLeading)
-                        
+                            .onAppear {
+                                if let oldProblem = logMainData?.problem {
+                                    problem = oldProblem
+                                }
+                            }
+                            .scrollContentBackground(.hidden)
+                            .background(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(.white.opacity(0.4))
+                            )
+                            .overlay(alignment: .topLeading) {
+                                Text("개선이 필요하다고 생각되는 부분")
+                                    .font(.footnote)
+                                    .foregroundStyle(problem.isEmpty ? (colorScheme == .dark ? .white: .gray) : .clear)
+                                    .padding(.horizontal, 15)
+                                    .padding(.vertical, 10)
+                            }
+
                         Spacer()
                         
                         Text("Try")
@@ -127,10 +176,28 @@ struct LogEditorView: View {
                             .bold()
                             .padding(.vertical, 9)
                         
-                        TextField("", text: .constant(""), prompt: Text("개선이 필요하다고 생각되는 부분"))
+                        TextEditor(text: $tryContent)
                             .font(.footnote)
-                            .bold()
+                            .frame(height: contentsHeight)
+                            .cornerRadius(8)
                             .padding(.leading, contentsLeading)
+                            .onAppear {
+                                if let oldTryContent = logMainData?.tryContent {
+                                    tryContent = oldTryContent
+                                }
+                            }
+                            .scrollContentBackground(.hidden)
+                            .background(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(.white.opacity(0.4))
+                            )
+                            .overlay(alignment: .topLeading) {
+                                Text("Problem에 대한 해결책")
+                                    .font(.footnote)
+                                    .foregroundStyle(tryContent.isEmpty ? (colorScheme == .dark ? .white : .gray) : .clear)
+                                    .padding(.horizontal, 15)
+                                    .padding(.vertical, 10)
+                            }
                         
                         Spacer()
                         Spacer()
@@ -140,13 +207,30 @@ struct LogEditorView: View {
                 .padding(.horizontal, 10)
             }
             .padding(.horizontal, 20)
-            
-            
+            .onAppear {
+                // 수정 모드 진입 시 한 번만 초기화
+                guard !didLoadInitialData else { return }
+                didLoadInitialData = true
+                if let log = logMainData {
+                    // 1) 카테고리 복원
+                    selectedCategoryType = log.category?.type ?? .tech
+                    // 2) childCategory 하나를 배열로 저장
+                    if let child = log.childCategory {
+                        selectedChildCategory = [child]
+                    }
+                    // 3) 뷰모델 동기화
+                    let types = selectedChildCategory.map(\.type)
+                    viewModel.applySelections(
+                        to: selectedCategoryType,
+                        modalSelectedTags: types
+                    )
+                }
+            }
         }
         .padding(
             EdgeInsets(top: stackToPadding, leading: stackHorizontalPadding, bottom: stackBottomPadding, trailing: stackHorizontalPadding)
         )
-        .navigationTitle(logMainData == nil ? "등록" : "수정")
+        .navigationTitle(logMainData == nil ? "회고 등록" : "회고 수정")
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden()
         .toolbar {
@@ -167,13 +251,13 @@ struct LogEditorView: View {
             // 등록 / 수정
             ToolbarItem {
                 Button {
+                    save()
+                    
+                    // 등록
                     if logMainData == nil {
-                        // 등록
-                        
                         dismiss()
                     } else {
                         // 수정
-                        
                         isShowEditorView = false
                     }
                 } label: {
@@ -182,238 +266,191 @@ struct LogEditorView: View {
                         .padding(.leading, -8)
                 }
             }
-            
-
-            
         }
         .sheet(isPresented: $presentCardModal) {
-            CategoryModal()
-                .presentationDetents([.fraction(0.7)])
-                .presentationDragIndicator(.hidden)
+            CategoryModal(viewModel: viewModel, category: $selectedCategoryType, isSelectedAlert: $isSelectedAlert) { newTypes in
+                guard let cat = viewModel.categories.first(where: { $0.type == selectedCategoryType }) else { return }
+                selectedChildCategory = cat.tags.filter { newTypes.contains($0.type) }
+            }
+            .presentationDetents([.fraction(0.5)])
+            .presentationDragIndicator(.hidden)
+        }
+    }
+}
+
+// MARK: - 등록 / 수장
+extension LogEditorView {
+    
+    func save() {
+        let inputTag = !selectedChildCategory.isEmpty ? selectedChildCategory : (logMainData?.category?.tags ?? [])
+        let inputCategory = Category(type: selectedCategoryType, tags: inputTag)
+        
+        
+        if let logMainData {
+            logMainData.title = title
+            logMainData.category = inputCategory
+            logMainData.keep = keep
+            logMainData.problem = problem
+            logMainData.tryContent = tryContent
+            logMainData.creationDate = Date.now
+        } else {
+            let inputMainData = LogMainData(id: maxId.map { $0 + 1 } ?? 1, title: title, keep: keep, problem: problem, tryContent: tryContent, creationDate: Date.now, category: inputCategory, childCategory: inputTag.first)
+            context.insert(inputMainData)
         }
         
-//=======
-//    @State private var title: String = ""
-//    @State private var keep: String = ""
-//    @State private var problem: String = ""
-//    @State private var tryContent: String = ""
-//    @State private var selectedCategoryId: Int = 1
-//    @State private var selectedChildCategoryType: String = ""
-//    
-//    var viewModel: LogListViewModel
-//    var editingLog: LogMainData? // 수정 모드일 경우 사용
-//    
-//    var isEditMode: Bool {
-//        editingLog != nil
-//    }
-//    
-//    init(viewModel: LogListViewModel, editingLog: LogMainData? = nil) {
-//        self.viewModel = viewModel
-//        self.editingLog = editingLog
-//        
-//        if let log = editingLog {
-//            _title = State(initialValue: log.title ?? "")
-//            _keep = State(initialValue: log.keep)
-//            _problem = State(initialValue: log.problem)
-//            _tryContent = State(initialValue: log.tryContent)
-//            _selectedCategoryId = State(initialValue: log.category?.id ?? 1)
-//            _selectedChildCategoryType = State(initialValue: log.childCategory?.type.rawValue ?? "")
-//        }
-//    }
-//    
-//    var body: some View {
-//        NavigationStack {
-//            ScrollView {
-//                VStack(alignment: .leading, spacing: 20) {
-//                    // 제목 입력
-//                    TextField("제목 (선택사항)", text: $title)
-//                        .padding()
-//                        .background(Color.gray.opacity(0.1))
-//                        .cornerRadius(8)
-//                    
-//                    // 카테고리 선택
-//                    VStack(alignment: .leading) {
-//                        Text("카테고리")
-//                            .font(.headline)
-//                        
-//                        Picker("카테고리", selection: $selectedCategoryId) {
-//                            ForEach(viewModel.categories) { category in
-//                                Text(category.title).tag(category.id)
-//                            }
-//                        }
-//                        .pickerStyle(SegmentedPickerStyle())
-//                        .padding(.vertical, 8)
-//                    }
-//                    
-//                    // 태그 선택
-//                    VStack(alignment: .leading) {
-//                        Text("태그")
-//                            .font(.headline)
-//                        
-//                        // 선택된 카테고리에 해당하는 태그만 표시
-//                        let filteredTags = viewModel.childCategories.filter { tag in
-//                            tag.category?.id == selectedCategoryId
-//                        }
-//                        
-//                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 100))], spacing: 8) {
-//                            ForEach(filteredTags) { tag in
-//                                Button(action: {
-//                                    selectedChildCategoryType = tag.type.rawValue
-//                                }) {
-//                                    Text("#\(tag.name)")
-//                                        .padding(.horizontal, 10)
-//                                        .padding(.vertical, 5)
-//                                        .background(
-//                                            selectedChildCategoryType == tag.type.rawValue ?
-//                                            Color.growthGreen : Color.gray.opacity(0.2)
-//                                        )
-//                                        .foregroundColor(
-//                                            selectedChildCategoryType == tag.type.rawValue ?
-//                                            .white : .primary
-//                                        )
-//                                        .cornerRadius(5)
-//                                }
-//                                .buttonStyle(PlainButtonStyle())
-//                            }
-//                        }
-//                        .padding(.vertical, 8)
-//                    }
-//                    
-//                    // Keep 입력
-//                    VStack(alignment: .leading) {
-//                        Text("Keep")
-//                            .font(.headline)
-//                        
-//                        TextEditor(text: $keep)
-//                            .padding()
-//                            .frame(height: 120)
-//                            .background(Color.gray.opacity(0.1))
-//                            .cornerRadius(8)
-//                            .overlay(
-//                                RoundedRectangle(cornerRadius: 8)
-//                                    .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-//                            )
-//                    }
-//                    
-//                    // Problem 입력
-//                    VStack(alignment: .leading) {
-//                        Text("Problem")
-//                            .font(.headline)
-//                        
-//                        TextEditor(text: $problem)
-//                            .padding()
-//                            .frame(height: 120)
-//                            .background(Color.gray.opacity(0.1))
-//                            .cornerRadius(8)
-//                            .overlay(
-//                                RoundedRectangle(cornerRadius: 8)
-//                                    .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-//                            )
-//                    }
-//                    
-//                    // Try 입력
-//                    VStack(alignment: .leading) {
-//                        Text("Try")
-//                            .font(.headline)
-//                        
-//                        TextEditor(text: $tryContent)
-//                            .padding()
-//                            .frame(height: 120)
-//                            .background(Color.gray.opacity(0.1))
-//                            .cornerRadius(8)
-//                            .overlay(
-//                                RoundedRectangle(cornerRadius: 8)
-//                                    .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-//                            )
-//                    }
-//                }
-//                .padding()
-//            }
-//            .navigationTitle(isEditMode ? "회고 수정" : "회고 작성")
-//            .navigationBarTitleDisplayMode(.inline)
-//            .toolbar {
-//                ToolbarItem(placement: .navigationBarLeading) {
-//                    Button("취소") {
-//                        dismiss()
-//                    }
-//                }
-//                
-//                ToolbarItem(placement: .navigationBarTrailing) {
-//                    Button(isEditMode ? "수정" : "저장") {
-//                        if isEditMode, let log = editingLog {
-//                            viewModel.updateLog(
-//                                log: log,
-//                                title: title.isEmpty ? nil : title,
-//                                categoryId: selectedCategoryId,
-//                                childCategoryType: selectedChildCategoryType,
-//                                keep: keep,
-//                                problem: problem,
-//                                tryContent: tryContent
-//                            )
-//                        } else {
-//                            viewModel.addLog(
-//                                title: title.isEmpty ? nil : title,
-//                                categoryId: selectedCategoryId,
-//                                childCategoryType: selectedChildCategoryType,
-//                                keep: keep,
-//                                problem: problem,
-//                                tryContent: tryContent
-//                            )
-//                        }
-//                        dismiss()
-//                    }
-//                    .disabled(keep.isEmpty || problem.isEmpty || tryContent.isEmpty || selectedChildCategoryType.isEmpty)
-//                }
-//            }
-//        }
-//>>>>>>> feat/LogMainModel
     }
 }
 
 
+
+struct CategoryHeaderView: View {
+  let selectedCategoryType: CategoryType
+  let tags: [ChildCategory]
+  let onTapCategory: () -> Void
+
+  var body: some View {
+      VStack(alignment: .leading) {
+      Button { onTapCategory() } label: {
+        Text(selectedCategoryType.rawValue)
+          .font(.callout)
+          .foregroundStyle(.white)
+          .padding(.horizontal, 10).padding(.vertical, 5)
+          .background(RoundedRectangle(cornerRadius: 7).fill(.growthGreen))
+      }
+      HStack(spacing: 4) {
+        ForEach(tags) { tag in
+          Text("#\(tag.name)")
+            .font(.caption2)
+            .padding(.horizontal, 5)
+            .background(Color.gray.opacity(0.1))
+            .cornerRadius(4)
+        }
+      }
+    }
+    .padding(.vertical, 5)
+  }
+}
+
+
+
+
+
+
+// MARK: - 카테고리, 태그 선택 모달
 struct CategoryModal:  View {
     @Environment(\.dismiss) var dismiss
+    @Environment(\.colorScheme) var colorScheme
     
-    @State var category: CategoryType = .tech
-    @State var tags: ChildCategoryType = .codingTest
+    @ObservedObject var viewModel: LogEditorViewModel
+    @Binding var category: CategoryType
+    @Binding var isSelectedAlert: Bool
     
-    @State var viewModel = LogEditorViewModel()
+    /// Apply 시 선택된 태그 타입 배열을 돌려보낼 클로저
+    let onApply: ([ChildCategoryType]) -> Void
+    
+    /// 모달 내부 복사본 상태
+    @State private var modalCategory: CategoryType = .tech
+    @State private var modalSelectedTags: [ChildCategoryType] = []
+    
+    private let columns = [
+        GridItem(.flexible(), spacing: 10),
+        GridItem(.flexible(), spacing: 10)
+    ]
+    
+    init(viewModel: LogEditorViewModel,category: Binding<CategoryType>,isSelectedAlert: Binding<Bool>
+         ,onApply: @escaping ([ChildCategoryType]) -> Void) {
+        self.viewModel = viewModel
+        self._category = category
+        self._isSelectedAlert = isSelectedAlert
+        self.onApply = onApply
+
+        // 모달 카테고리 복사
+        let cat = category.wrappedValue
+        self._modalCategory = State(initialValue: cat)
+
+        // viewModel에서 isSelected인 태그 타입만 골라서 초기화
+        let existing = viewModel.categories
+          .first { $0.type == cat }?
+          .tags.filter(\.isSelected)
+          .map(\.type) ?? []
+        self._modalSelectedTags = State(initialValue: existing)
+      }
+
     
     var body: some View {
-        Picker("category", selection: $category) {
-            ForEach(CategoryType.allCases) {
-                Text($0.rawValue)
-            }
-        }
-        .pickerStyle(.palette)
-        
-        ForEach(viewModel.categories) { categorys in
-            
-            switch category {
-            case .tech:
-                ForEach(categorys.tags) { tag in
-                    Text("\(tag.type)")
-                    
+        GeometryReader { geometry in
+            VStack {
+                HStack {
+                    Spacer()
+                    Button("적용") {
+                        // 1) 모달 카테고리 → 부모 바인딩
+                        category = modalCategory
+                        // 2) 뷰모델 태그 상태 덮어쓰기
+                        viewModel.applySelections(to: modalCategory, modalSelectedTags: modalSelectedTags)
+                        // 3) 선택된 타입 배열 전달
+                        onApply(modalSelectedTags)
+                        dismiss()
+                    }
                 }
-                RoundedRectangle(cornerRadius: 20)
-                    .frame(maxWidth: .infinity, maxHeight: 100)
-            case .programming:
-                RoundedRectangle(cornerRadius: 20)
-                    .frame(maxWidth: .infinity, maxHeight: 100)
-            case .selfDevelopment:
-                RoundedRectangle(cornerRadius: 20)
-                    .frame(maxWidth: .infinity, maxHeight: 100)
-            case .etc:
-                RoundedRectangle(cornerRadius: 20)
-                    .frame(maxWidth: .infinity, maxHeight: 100)
+                .padding(10)
+                
+                Picker("Category", selection: $modalCategory) {
+                    ForEach(CategoryType.allCases) { Text($0.rawValue) }
+                }
+                .pickerStyle(.palette)
+                .padding(.horizontal)
+                .onChange(of: modalCategory) { newCat in
+                    // 카테고리 변경 시 기존 isSelected 상태만 로드
+                    modalSelectedTags = viewModel
+                        .categories
+                        .first(where: { $0.type == newCat })?
+                        .tags
+                        .filter(\.isSelected)
+                        .map(\.type) ?? []
+                }
+                
+                // — 2열 태그 그리드
+                LazyVGrid(columns: columns, spacing: 10) {
+                    ForEach(viewModel
+                        .categories
+                        .first(where: { $0.type == modalCategory })?
+                        .tags ?? [], id: \.type) { tag in
+                            
+                            let isOn = modalSelectedTags.contains(tag.type)
+                            Text(tag.name)
+                                .padding(8)
+                                .frame(maxWidth: .infinity)
+                                .background(isOn
+                                            ? Color.growthGreen
+                                            : Color.gray.opacity(0.1))
+                                .foregroundColor(isOn
+                                                 ? .white
+                                                 : (colorScheme == .dark ? .white : .primary))
+                                .cornerRadius(8)
+                                .onTapGesture {
+                                    if isOn {
+                                        modalSelectedTags.removeAll { $0 == tag.type }
+                                    } else if modalSelectedTags.count < 1 {
+                                        modalSelectedTags.append(tag.type)
+                                    } else {
+                                        isSelectedAlert = true
+                                    }
+                                }
+                        }
+                }
+                .padding()
+                
+                Spacer()
             }
-            
+            .frame(width: geometry.size.width, height: geometry.size.height, alignment: .top)
         }
-        //        Button("dismiss") {
-        //            dismiss()
-        //        }
-        //
+        .padding()
+        .alert("태그는 1개만 선택할 수 있습니다.", isPresented: $isSelectedAlert) {
+            Button("확인", role: .cancel) { }
+        }
+        
     }
+
 }
 
     

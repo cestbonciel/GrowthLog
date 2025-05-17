@@ -43,7 +43,6 @@ final class LogMainData {
     var formattedtime: String {
         let df = DateFormatter()
         df.dateFormat = "hh:mm a"
-
         df.locale = Locale(identifier: "en_US_POSIX")
         df.timeZone = TimeZone(secondsFromGMT: 0)
 
