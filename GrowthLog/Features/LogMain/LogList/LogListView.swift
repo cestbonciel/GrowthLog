@@ -8,139 +8,101 @@ import SwiftUI
 import SwiftData
 
 struct LogListView: View {
-    @Environment(\.modelContext) var context
-    
-    @State private var isShowSampleCell = false
-    @State private var isShowEditorView = false
-    @State private var isLoading = true
-    
-    @Environment(\.modelContext) private var modelContext
     @StateObject private var viewModel: LogListViewModel
-    
-    @Query(sort: [SortDescriptor(\LogMainData.creationDate, order: .reverse)])
-    var logMainData: [LogMainData]
-    
+    @State private var isShowEditorView = false
+
     init(modelContext: ModelContext) {
-        _viewModel = StateObject(
-            wrappedValue: LogListViewModel(modelContext: modelContext)
-        )
+        _viewModel = StateObject(wrappedValue: LogListViewModel(modelContext: modelContext))
     }
-    
+
     var body: some View {
         NavigationStack {
             VStack {
-                if logMainData.isEmpty {
+                if viewModel.logs.isEmpty {
                     Text("아직 작성한 회고가 없습니다.")
+                        .foregroundColor(.gray)
                 } else {
-                    ZStack {
-                        listCell(items: logMainData)
-                            .listStyle(.plain)
-                            .padding(EdgeInsets(top: 10, leading: 10, bottom: 20, trailing: 10))
-                        
-                        VStack {
-                            Spacer()
-                            
-                            HStack {
-                                Spacer()
-                                
-                                NavigationLink(destination: LogEditorView(isShowEditorView: $isShowEditorView, logMainData: nil)) {
-                                    Circle()
-                                        .frame(width: 50, height: 50)
-                                        .foregroundStyle(.gray.opacity(0.8))
-                                        .overlay {
-                                            Image(systemName: "square.and.pencil")
-                                                .resizable()
-                                                .scaledToFit()
-                                                .frame(height: 25)
-                                                .foregroundStyle(.white)
-                                                .offset(x: 2, y: -2)
-                                        }
-                                        .offset(x: -10, y: -10)
-                                }
-                            }
-                            .padding()
-                        }
-                        .padding()
-                        
-                    }
+                    listCell(items: viewModel.logs)
                 }
             }
-//            .navigationTitle("GrowthLog")
             .navigationTitle("회고 목록")
-            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem {
+                ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
-                        isShowSampleCell = true
+                        isShowEditorView = true
                     } label: {
-                        Image(systemName: "gearshape.fill")
+                        Image(systemName: "square.and.pencil")
                     }
                 }
             }
-            .navigationDestination(isPresented: $isShowSampleCell) {
-                SettingView()
+            .sheet(isPresented: $isShowEditorView) {
+                LogEditorView(isShowEditorView: $isShowEditorView, logMainData: nil)
+            }
+            .navigationDestination(for: Int.self) { id in
+                if let log = viewModel.log(for: id) {
+                    LogDetailView(logMainData: log)
+                } else {
+                    Text("회고 데이터를 찾을 수 없습니다.")
+                }
             }
         }
+        .onAppear {
+            viewModel.fetchLogs()
+        }
     }
-    
-    // 회고 list 출력
+
     private func listCell(items: [LogMainData]) -> some View {
         List {
             ForEach(items) { item in
-                ZStack(alignment: .leading) {
+                ZStack {
                     LogListCell(logMainData: item)
                         .padding(.vertical, 5)
-                    NavigationLink {
-                        LogDetailView(logMainData: item)
-                    } label: {
+
+                    NavigationLink(value: item.id) {
                         EmptyView()
                     }
                     .opacity(0.0)
                 }
                 .listRowSeparator(.hidden)
-                .listRowBackground(Color.clear)
             }
-            .onDelete(perform: delete)
+            .onDelete(perform: viewModel.deleteLog)
         }
-    }
-}
-
-extension LogListView {
-    func delete(_ indexSet: IndexSet) {
-        for index in indexSet {
-            context.delete(logMainData[index])
-        }
+        .listStyle(.plain)
     }
 }
 
 #Preview {
-    //SwiftData 미리보기 환경 설정
-    let config = ModelConfiguration(isStoredInMemoryOnly: true)
-    let container = try! ModelContainer(for: LogMainData.self/*, Category.self, ChildCategory.self*/, configurations: config)
-    
-    // 더미 ModelContext 생성
-    let context = container.mainContext
-    
-    // 미리보기용 카테고리 및 태그 생성
-    let previewCategory = Category(type: .programming)
-    let previewTag = ChildCategory(type: .swift)
-    previewTag.category = previewCategory
-    
-    // 미리보기용 로그 생성
-    let previewLog = LogMainData(
-        id: 1,
-        title: "SwiftUI 학습",
-        keep: "SwiftUI 기본 개념을 이해했다",
-        problem: "복잡한 레이아웃 구성이 어려웠다",
-        tryContent: "더 많은 예제를 통해 연습해보기",
-        creationDate: Date(),
-        category: previewCategory,
-        childCategory: previewTag
-    )
-    
-    context.insert(previewCategory)
-    context.insert(previewTag)
-    context.insert(previewLog)
-    
-    return LogListView(modelContext: context)
+    do {
+        // 인메모리 SwiftData 컨테이너 생성
+        let config = ModelConfiguration(isStoredInMemoryOnly: true)
+        let container = try ModelContainer(for: LogMainData.self, Category.self, ChildCategory.self, configurations: config)
+        let context = container.mainContext
+
+        // 더미 데이터 준비
+        let category = Category(type: .programming)
+        let tag = ChildCategory(type: .swift)
+        tag.category = category
+        category.tags = [tag]
+
+        let log = LogMainData(
+            id: 1,
+            title: "SwiftUI 회고",
+            keep: "StateObject에 대해 배웠다",
+            problem: "초기화 위치에 따라 다른 동작",
+            tryContent: "뷰 생명주기 공부하기",
+            creationDate: Date(),
+            category: category,
+            childCategory: tag
+        )
+
+        // SwiftData 컨텍스트에 삽입
+        context.insert(category)
+        context.insert(tag)
+        context.insert(log)
+
+        return LogListView(modelContext: context)
+
+    } catch {
+        return Text("프리뷰 생성 실패: \(error.localizedDescription)")
+    }
 }
