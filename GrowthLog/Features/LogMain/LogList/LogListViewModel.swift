@@ -22,7 +22,7 @@ final class LogListViewModel: ObservableObject {
         self.modelContext = modelContext
         // 카테고리 먼저 초기화하고 확실히 완료되게 함
         initializeCategoriesAndWait()
-        loadCategoriesIfNeeded()
+        //loadCategoriesIfNeeded()
         loadJsonData()
     }
     
@@ -119,7 +119,7 @@ final class LogListViewModel: ObservableObject {
     }
     
     // 카테고리 데이터 초기화 (앱 첫 실행시)
-    private func loadCategoriesIfNeeded() {
+    /* private func loadCategoriesIfNeeded() {
         do {
             let categoryDescriptor = FetchDescriptor<Category>()
             let existingCategories = try modelContext.fetch(categoryDescriptor)
@@ -201,7 +201,7 @@ final class LogListViewModel: ObservableObject {
             errorMessage = "Failed to initialize categories: \(error.localizedDescription)"
             print(errorMessage ?? "")
         }
-    }
+    } */
     
     // 카테고리 가져오기
     private func fetchCategories() {
@@ -250,25 +250,66 @@ final class LogListViewModel: ObservableObject {
             let decoder = JSONDecoder()
             let logJson = try decoder.decode(LogJson.self, from: data)
             
-            // 카테고리 사전 생성 (카테고리 관련 문제 회피)
-            let techCategory = Category(type: .tech)
-            let programmingCategory = Category(type: .programming)
-            let selfDevCategory = Category(type: .selfDevelopment)
-            let etcCategory = Category(type: .etc)
             
-            modelContext.insert(techCategory)
-            modelContext.insert(programmingCategory)
-            modelContext.insert(selfDevCategory)
-            modelContext.insert(etcCategory)
             
             // 차일드카테고리 사전 생성
             let childCategoryMap = createChildCategories()
             
+            let makingTagMap: [String: ChildCategory]
+            let categoryMap: [Int: Category]
+            
+            if !categories.isEmpty {
+                categoryMap = Dictionary(uniqueKeysWithValues: categories.map { ($0.id, $0) })
+                print("기존 \(categories.count)개 카테고리를 사용합니다")
+            } else {
+                let techCategory = Category(type: .tech)
+                let programmingCategory = Category(type: .programming)
+                let selfDevCategory = Category(type: .selfDevelopment)
+                let etcCategory = Category(type: .etc)
+                
+                modelContext.insert(techCategory)
+                modelContext.insert(programmingCategory)
+                modelContext.insert(selfDevCategory)
+                modelContext.insert(etcCategory)
+                
+                // 메모리의 카테고리 배열도 업데이트
+                categories = [techCategory, programmingCategory, selfDevCategory, etcCategory]
+                
+                // 카테고리 맵 생성
+                categoryMap = [
+                    1: techCategory,
+                    2: programmingCategory,
+                    3: selfDevCategory,
+                    4: etcCategory
+                ]
+                print("새로운 카테고리 \(categories.count)개를 생성했습니다")
+            }
+            
+            if !childCategories.isEmpty {
+                var map: [String: ChildCategory] = [:]
+                for tag in childCategories {
+                    map[tag.type.rawValue] = tag
+                }
+                makingTagMap = map
+                print("기존 \(childCategories.count)개 태그를 사용")
+            } else {
+                makingTagMap = createChildCategories()
+                print("새로운 태그 추가")
+            }
+            
             // 임시 컬렉션에 로그 데이터 모으기
             var newLogs: [LogMainData] = []
             
+            // 중복 ID 추적 - 명시적으로 사용하여 중복 방지
+            var usedIds = Set<Int>()
+            
             // SwiftData에 데이터 저장
             for logData in logJson.logs {
+                if usedIds.contains(logData.id) {
+                    print("중복 로그 ID 건너뛰기: \(logData.id)")
+                    continue
+                }
+                
                 let dateFormatter = DateFormatter()
                 dateFormatter.dateFormat = "yyyy-MM-dd hh:mm a"
                 dateFormatter.locale = Locale(identifier: "en_US_POSIX")
@@ -279,19 +320,19 @@ final class LogListViewModel: ObservableObject {
                     continue
                 }
                 
-                // ID 기반으로 적절한 카테고리 선택
-                let category: Category
-                switch logData.categoryId {
-                case 1: category = techCategory
-                case 2: category = programmingCategory
-                case 3: category = selfDevCategory
-                case 4: category = etcCategory
-                default:
-                    print("Invalid category ID: \(logData.categoryId)")
+                guard let category = categoryMap[logData.categoryId] else {
+                    print("카테고리 ID \(logData.categoryId) 찾기 실패. 사용 가능한 카테고리: \(categoryMap.keys.sorted().map { String($0) }.joined(separator: ", "))")
                     continue
                 }
-                
+ 
                 // 차일드 카테고리 타입으로 찾기
+                let tagExists = category.tags.contains { $0.type.rawValue == logData.childCategoryType }
+                if !tagExists {
+                    print("경고: 카테고리 \(category.title)에 태그 \(logData.childCategoryType)가 없습니다")
+                }
+                guard let selectedTag = category.tags.first(where: { $0.type.rawValue == logData.childCategoryType }) else {
+                    continue
+                }
                 guard let childCategory = childCategoryMap[logData.childCategoryType] else {
                     print("Child category not found for type: \(logData.childCategoryType)")
                     continue
@@ -307,6 +348,7 @@ final class LogListViewModel: ObservableObject {
                     category: category,
                     childCategory: childCategory
                 )
+                usedIds.insert(logData.id)
                 newLogs.append(logMainData)
                 modelContext.insert(logMainData)
             }
@@ -314,7 +356,18 @@ final class LogListViewModel: ObservableObject {
             // 로그 배열 업데이트
             logs = newLogs
             
+            // 중요: 저장 전에 모든 관계가 올바르게 설정되었는지 다시 확인
+            for log in logs {
+                if log.category == nil {
+                    print("경고: ID \(log.id)인 로그의 카테고리가 nil입니다")
+                }
+//                if log.childCategory.isEmpty { // 빈 배열 체크
+//                    print("경고: ID \(log.id)인 로그의 자식 카테고리가 없습니다")
+//                }
+            }
+            
             try modelContext.save()
+            print("저장소에 저장: \(logs.count)")
         } catch {
             errorMessage = "Error loading or parsing the JSON: \(error.localizedDescription)"
             print(errorMessage ?? "")
@@ -330,6 +383,8 @@ final class LogListViewModel: ObservableObject {
             modelContext.insert(childCategory)
             map[type.rawValue] = childCategory
         }
+        
+        childCategories = Array(map.values)
         
         return map
     }
