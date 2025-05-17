@@ -7,7 +7,8 @@
 
 import SwiftUI
 
-class LogEditorViewModel: ObservableObject {
+/// 작성, 수정 화면 뷰모델
+final class LogEditorViewModel: ObservableObject {
     var categories: [Category]
     
     init() {
