@@ -22,7 +22,7 @@ struct LogDetailView: View {
     var body: some View {
         ZStack {
             if isShowEditorView {
-                LogEditorView(isShowEditorView: $isShowEditorView, logMainData: logMainData, maxId: nil)
+                LogEditorView(isShowEditorView: $isShowEditorView, logMainData: logMainData)
             } else  {
                 RoundedRectangle(cornerRadius: 20)
                     .fill(.growthGreen.opacity(0.3))
@@ -32,7 +32,7 @@ struct LogDetailView: View {
                     
                     HStack {
                         VStack(alignment: .leading) {
-                            Text(logMainData.childCategory?.category?.title ?? "")
+                            Text(logMainData.category?.title ?? "")
                                 .font(.callout)
                                 .foregroundStyle(.white)
                                 .padding(.horizontal, 10)
