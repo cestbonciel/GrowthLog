@@ -480,9 +480,7 @@ final class StatisticsViewModel: ObservableObject {
 
     
     // 키워드 및 태그 추출
-    private func extractKeywordsAndTags(logs: [LogMainData]) {
-        print("추출 중인 로그 수: \(logs.count)")  // 디버깅용 로그 추가
-        
+    private func extractKeywordsAndTags(logs: [LogMainData]) {        
         if logs.isEmpty {
             // 로그가 없으면 빈 데이터 설정
             weeklyKeywords = []
@@ -529,8 +527,7 @@ final class StatisticsViewModel: ObservableObject {
                          calendar.component(.year, from: log.creationDate) == selectedYear
             return startOfWeek <= log.creationDate && log.creationDate <= endOfWeek && logInMonth
         }
-        
-        print("주간 로그 수: \(weeklyLogs.count)")  // 디버깅용 로그 추가
+
         
         // 주간 태그와 키워드 추출
         weeklyTags = extractTagsFromLogs(weeklyLogs)
@@ -584,7 +581,6 @@ final class StatisticsViewModel: ObservableObject {
     
     // 평균 단어 수 및 활동적인 요일 계산
     private func extractTagsFromLogs(_ logs: [LogMainData]) -> [TagStat] {
-        print("태그 추출 대상 로그 수: \(logs.count)")
         if logs.isEmpty {
             return []
         }
