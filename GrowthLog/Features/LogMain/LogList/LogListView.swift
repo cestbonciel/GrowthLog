@@ -100,8 +100,24 @@ struct LogListView: View {
                 .listRowSeparator(.hidden)
                 .listRowBackground(Color.clear)
             }
-            .onDelete(perform: delete)
         }
+//        List {
+//            ForEach(items) { item in
+//                ZStack(alignment: .leading) {
+//                    LogListCell(logMainData: item)
+//                        .padding(.vertical, 5)
+//                    NavigationLink {
+//                        LogDetailView(logMainData: item)
+//                    } label: {
+//                        EmptyView()
+//                    }
+//                    .opacity(0.0)
+//                }
+//                .listRowSeparator(.hidden)
+//                .listRowBackground(Color.clear)
+//            }
+//            .onDelete(perform: delete)
+//        }
     }
 }
 

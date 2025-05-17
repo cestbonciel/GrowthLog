@@ -20,7 +20,7 @@ struct LogListCell: View {
             VStack(spacing: 0) {
                 HStack {
                     VStack(alignment: .leading) {
-                        Text(logMainData.childCategory?.category?.title ?? "카테고리 없음")
+                        Text(logMainData.category?.title ?? "카테고리 없음")
                             .font(.caption)
                             .foregroundStyle(.white)
                             .padding(.horizontal, 10)
@@ -30,9 +30,11 @@ struct LogListCell: View {
                                     .fill(.growthGreen)
                             )
                         
-                        Text("#\(logMainData.childCategory?.name ?? "")")
-                            .font(.caption)
-                            .padding(.horizontal, 5)
+                        if let childCategory = logMainData.childCategory {
+                            Text("#\(childCategory.name)")
+                                .font(.caption)
+                                .padding(.horizontal, 5)
+                        }
                         
                     }
                     
