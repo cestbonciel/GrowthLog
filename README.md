@@ -21,8 +21,8 @@
 
 ## 🔑 핵심 기술 
 
-### 🗃️ 프레임워크
-- UI: SwiftUI
+### 🗃️ 기술스택(Tech Stack)
+- 프레임워크: SwiftUI
 - 데이터관리: swiftData
 - 라이브러리: SwiftUI Charts
 - 프로젝트 구조(Architecture Pattern): 기능별 폴더 중점 안 MVVM 아키텍처
