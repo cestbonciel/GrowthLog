@@ -109,7 +109,7 @@
 |:---:|:---:|:---:|
 |<img width="150" alt="KakaoTalk_Photo_2024-03-11-15-12-05" src="https://github.com/user-attachments/assets/c942b244-f9df-42df-81a6-e0ca20d7e760" />|<img width="150" alt="appIcongL" src="https://github.com/user-attachments/assets/d94f3f9d-5779-4e0a-98c8-846e74973381" />|<img width="150" alt="appIcongL" src="https://github.com/user-attachments/assets/d94f3f9d-5779-4e0a-98c8-846e74973381" />|
 |`iOS`|`iOS`|`iOS`|
-|`역할`: 리더|`역할`: 팀원|`역할`: 팀원|
+|`역할`: 리더|`역할`: 팀원, 회의록 작성|`역할`: 팀원, 발표자|
 |JSON Mock 데이터 500개 수동 생성 및 파싱·로딩 후 데이터 저장,<br>Github PR관리,<br>프로젝트 초기 세팅<br>통계뷰 구현| 검색 및 필터링 뷰, 세팅뷰, 온보딩 UI| 회고 CRUD, 로그 메인뷰 UI|
 
 
