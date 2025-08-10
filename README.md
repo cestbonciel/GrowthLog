@@ -103,7 +103,7 @@
 ```
  ## 👩🏻‍💻 팀원 소개
 ### Developer
-[김서현](https://playground-coding.tistory.com/)|[백현진](https://github.com/cestbonciel/GrowthLog)|[이주용](https://github.com/cestbonciel/GrowthLog)|
+[김서현](https://github.com/cestbonciel/)|[백현진](https://github.com/cestbonciel/GrowthLog)|[이주용](https://github.com/cestbonciel/GrowthLog)|
 |:---:|:---:|:---:|
 |<img width="150" alt="KakaoTalk_Photo_2024-03-11-15-12-05" src="https://github.com/user-attachments/assets/c942b244-f9df-42df-81a6-e0ca20d7e760" />|<img width="150" alt="appIcongL" src="https://github.com/user-attachments/assets/d94f3f9d-5779-4e0a-98c8-846e74973381" />|<img width="150" alt="appIcongL" src="https://github.com/user-attachments/assets/d94f3f9d-5779-4e0a-98c8-846e74973381" />|
 |`iOS`|`iOS`|`iOS`|
