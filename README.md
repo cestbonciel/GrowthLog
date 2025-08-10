@@ -6,6 +6,8 @@
 - 앱 기획의도
   -  KPT 개발 회고를 통해 개발 경험에 적용, 노력한 부분, 문제 해결, 개선 결과를 함께 생각하며 
     긍정적 관점 리마인드, 개발자의 성장을 기록 
+## 🗓️ 개발 기간
+2025.05.12.월 - 2025.05.15.목 (약 5일 이내)
 
 ## 🖥️ 개발 환경
 
@@ -106,6 +108,6 @@
 |<img width="150" alt="KakaoTalk_Photo_2024-03-11-15-12-05" src="https://github.com/user-attachments/assets/c942b244-f9df-42df-81a6-e0ca20d7e760" />|<img width="150" alt="appIcongL" src="https://github.com/user-attachments/assets/d94f3f9d-5779-4e0a-98c8-846e74973381" />|<img width="150" alt="appIcongL" src="https://github.com/user-attachments/assets/d94f3f9d-5779-4e0a-98c8-846e74973381" />|
 |`iOS`|`iOS`|`iOS`|
 |`역할`: 리더|`역할`: 팀원|`역할`: 팀원|
-|JSON Mock 데이터 500개 수동 생성 및 Github PR관리, 프로젝트 초기 세팅| 검색 및 필터링 뷰, 세팅뷰, 온보딩 UI| 회고 CRUD, 로그 메인뷰 UI|
+|JSON Mock 데이터 500개 수동 생성 및 파싱·로딩 후 데이터 저장,<br>Github PR관리,<br>프로젝트 초기 세팅<br>통계뷰 구현| 검색 및 필터링 뷰, 세팅뷰, 온보딩 UI| 회고 CRUD, 로그 메인뷰 UI|
 
 
