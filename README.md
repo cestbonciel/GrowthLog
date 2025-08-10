@@ -1,73 +1,111 @@
 ## [2기] 프론티어 iOS 앱 개발자 부트캠프 - 미니프로젝트 1, 3조
 ### GrowthLog 
-거꾸로해도 그로스로그
+거꾸로해도 그로스로그, 개발자 맞춤형 KPT 회고 앱 개발
 🥳 자라나라 개발개발 🌱
+## 📱 앱 이름 및 소개
+- 앱 기획의도
+  -  KPT 개발 회고를 통해 개발 경험에 적용, 노력한 부분, 문제 해결, 개선 결과를 함께 생각하며 
+    긍정적 관점 리마인드, 개발자의 성장을 기록 
 
-# Git Convention
+## 🖥️ 개발 환경
 
-## 브랜치 전략
+- Xcode: 16.4
+- Swift: 5.9
+- 배포타겟: iOS 18.0
+- 작업 일정관리: Notion, FigJam
+- 디자인: Figma
 
-저희 프로젝트는 다음과 같은 브랜치 전략을 사용합니다:
+<br>
 
-| 브랜치 | 설명 |
-|--------|------|
-| `main` | 제품 배포용 브랜치로, 완성된 기능만 병합됩니다. |
-| `develop` | 개발 중인 기능들이 통합되는 브랜치입니다. |
-| `feat/[기능명]` | 새로운 기능 개발을 위한 브랜치입니다. |
-| `fix/[수정명]` | 버그 수정을 위한 브랜치입니다. |
+## 🔑 핵심 기술 
 
-## 브랜치 작업 흐름
+### 🗃️ 프레임워크
+- UI: SwiftUI
+- 데이터관리: swiftData
+- 라이브러리: SwiftUI Charts
+- 프로젝트 구조(Architecture Pattern): 기능별 폴더 중점 안 MVVM 아키텍처
+- UIUX: ipad, iphone 대응, Light, Dark Mode 대응 
 
-1. 기능 개발은 `feat/[기능별_영어네이밍]` 브랜치에서 시작합니다.
-2. 작업 완료 후 원격 저장소의 동일한 이름의 브랜치(`feat/[기능별_영어네이밍]`)로 먼저 Push 합니다.
-3. GitHub에서 Pull Request를 생성하여 `develop` 브랜치로 병합을 요청합니다.
-4. 코드 리뷰 후 승인되면 `develop` 브랜치에 병합됩니다.
-5. 개발이 완료되고 충분한 테스트가 이루어진 후에만 `develop`에서 `main` 브랜치로 병합합니다.
+<br>
 
-## 커밋 메시지 컨벤션
+## 🖼️ 화면 소개
+|**온보딩뷰**|**회고목록 및 등록 뷰**|**주간, 월간 통계 뷰**|**검색 필터뷰**|
+|:---:|:---:|:---:|:---:|
+|<img width="300" alt="온보딩뷰" src="https://github.com/user-attachments/assets/4674dd0b-b93b-4d3c-840b-82e5c8e351fc" />|<img width="300" alt="회고목록 및 등록 뷰" src="https://github.com/user-attachments/assets/ea7a349b-f04b-49cb-9e35-25d95164dcb5" />|<img width="300" alt="주간, 월간 통계 뷰" src="https://github.com/user-attachments/assets/59f5394c-8796-4af6-90ea-b49debf95cc9" />|<img width="300" alt="검색 필터뷰" src="https://github.com/user-attachments/assets/e3b46a36-a5f2-42b1-9b12-bf1d6508f96a" />|
 
-커밋 메시지는 다음 형식을 따릅니다:
-커밋 타입 영어: 제목 이나 기능 구현 및 해결 내용 요약 작성
+<br>
 
-### 커밋 타입
+## 🏛️ 프로젝트 구조
+```
+📂 GrowthLog  
+├── 📂 App  
+│   └── 🐦 GrowthLogApp.swift  
+├── 📂 Data  
+│   └── 📂 Model  
+│       ├── 🐦 Category.swift  
+│       ├── 🐦 ChildCategory.swift  
+│       ├── 🐦 LogJson.swift  
+│       ├── 🐦 LogMainData.swift  
+│       ├── 🐦 LogStatstics.swift  
+│       └── 🐦 StatEntry.swift  
+├── 📂 Extensions  
+│   └── 🐦 String+Extension.swift  
+├── 📂 Features  
+│   ├── 📂 CategoryFilter  
+│   │   ├── 🐦 CategoryFilterView.swift  
+│   │   ├── 🐦 CategoryFilterViewModel.swift  
+│   │   ├── 🐦 SearchFilterView.swift  
+│   │   └── 🐦 SearchFilterViewModel.swift  
+│   ├── 📂 Components  
+│   │   ├── 🐦 LogListCell.swift  
+│   │   └── 🐦 SampleCell.swift  
+│   ├── 📂 LogMain  
+│   │   ├── 📂 LogDetail  
+│   │   ├── 📂 LogEditor  
+│   │   ├── 📂 LogList  
+│   │   ├── 🐦 LogMainView.swift  
+│   │   └── 🐦 LogMainViewModel.swift  
+│   ├── 📂 Onboarding  
+│   │   └── 🐦 OnboardingView.swift  
+│   ├── 📂 Setting  
+│   │   └── 🐦 SettingView.swift  
+│   └── 📂 Statistics  
+│       ├── 🐦 StatisticsView.swift  
+│       └── 🐦 StatisticsViewModel.swift  
+├── 📂 Helpers  
+│   ├── 🐦 LogDataGenerator.swift  
+│   ├── 🐦 LogDummyView.swift  
+│   └── 🐦 LogEntry.swift  
+├── 📂 Resources  
+│   ├── 🎨 Assets.xcassets  
+│   │   ├── 🎨 AccentColor.colorset  
+│   │   ├── 🎨 AppIcon.appiconset  
+│   │   ├── 📄 Contents.json  
+│   │   └── 🎨 growthlogColor  
+│   ├── 📄 log_data.json  
+│   └── 📂 Preview Content  
+│       └── 🎨 Preview Assets.xcassets  
+├── 📂 GrowthLog.xcodeproj  
+│   ├── 📄 project.pbxproj  
+│   ├── 📂 project.xcworkspace  
+│   │   ├── 📄 contents.xcworkspacedata  
+│   │   ├── 📂 xcshareddata  
+│   │   │   └── 📂 swiftpm  
+│   │   └── 📂 xcuserdata  
+│   │       └── 📂 seohyunkim.xcuserdatad  
+│   └── 📂 xcuserdata  
+│       └── 📂 seohyunkim.xcuserdatad  
+│           ├── 📂 xcdebugger  
+│           └── 📂 xcschemes  
+└── 📄 README.md
+```
+ ## 👩🏻‍💻 팀원 소개
+### Developer
+[김서현](https://playground-coding.tistory.com/)|[백현진](https://github.com/cestbonciel/GrowthLog)|[이주용](https://github.com/cestbonciel/GrowthLog)|
+|:---:|:---:|:---:|
+|<img width="150" alt="KakaoTalk_Photo_2024-03-11-15-12-05" src="https://github.com/user-attachments/assets/c942b244-f9df-42df-81a6-e0ca20d7e760" />|<img width="150" alt="appIcongL" src="https://github.com/user-attachments/assets/d94f3f9d-5779-4e0a-98c8-846e74973381" />|<img width="150" alt="appIcongL" src="https://github.com/user-attachments/assets/d94f3f9d-5779-4e0a-98c8-846e74973381" />|
+|`iOS`|`iOS`|`iOS`|
+|`역할`: 리더|`역할`: 팀원|`역할`: 팀원|
+|JSON Mock 데이터 500개 수동 생성 및 Github PR관리, 프로젝트 초기 세팅| 검색 및 필터링 뷰, 세팅뷰, 온보딩 UI| 회고 CRUD, 로그 메인뷰 UI|
 
-| 타입 | 설명 |
-|------|------|
-| `feat` | 새로운 기능 추가 |
-| `fix` | 버그 수정 |
-| `docs` | 문서 수정 |
-
-## Pull Request 규칙
-
-1. PR 제목은 `[브랜치 타입]: [간단한 설명]` 형식으로 작성합니다.
-2. PR 내용에는 다음 사항을 포함합니다:
-   - 변경사항 요약
-   - 주요 변경 내용 목록
-   - 스크린샷 (UI 변경이 있는 경우)
-   - 관련된 이슈 번호
-
-## 코드 리뷰 가이드라인
-
-1. PR은 최소 2명 이상의 팀원에게 리뷰 승인을 받아야 합니다.
-2. 리뷰어는 다음을 확인합니다:
-   - 코드 품질 및 스타일 가이드 준수
-   - 테스트 코드 작성 여부
-   - 기능 요구사항 충족 여부
-
-## Git 작업 명령어 예시
-
-```bash
-# 새 기능 브랜치 생성
-git checkout develop
-git pull origin develop
-git checkout -b feat/login-page
-
-# 작업 후 커밋
-git add .
-git commit -m "feat: 로그인 페이지 UI 구현"
-
-# 원격 저장소에 푸시
-git push origin feat/login-page
-
-# 이후 GitHub에서 PR 생성
 
